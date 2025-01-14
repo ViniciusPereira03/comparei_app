@@ -1,19 +1,19 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
+import { View, TouchableOpacity, StyleSheet } from 'react-native'
 import React from 'react'
-import { useLinkBuilder, useTheme } from '@react-navigation/native';
+import { useLinkBuilder } from '@react-navigation/native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import { colors } from '../assets/colors/global';
 
 const TabBar = ({ state, descriptors, navigation }) => {
-    const { colors } = useTheme();
     const { buildHref } = useLinkBuilder();
 
     const icons = {
-        index: <FontAwesome6 name="list-check" size={24} color="white" />,
-        search: <FontAwesome5 name="search" size={24} color="white" />,
-        camera: <FontAwesome6 name="camera" size={24} color="white" />,
-        profile: <FontAwesome name="user" size={24} color="white" />,
+        index: <FontAwesome6 name="list-check" size={24} color={`${colors.white}`} />,
+        search: <FontAwesome5 name="search" size={24} color={`${colors.white}`} />,
+        camera: <FontAwesome6 name="camera" size={24} color={`${colors.white}`} />,
+        profile: <FontAwesome name="user" size={24} color={`${colors.white}`} />,
     }
 
     return (
@@ -28,7 +28,7 @@ const TabBar = ({ state, descriptors, navigation }) => {
                         ? options.title
                         : route.name;
     
-                    if(['_sitemap', '+not-found'].includes(route.name)) return null;
+                    if(['_sitemap', '+not-found', 'login', 'subscribe'].includes(route.name)) return null;
     
                     const isFocused = state.index === index;
     
@@ -62,14 +62,10 @@ const TabBar = ({ state, descriptors, navigation }) => {
                         onLongPress={onLongPress}
                         style={{
                             ...styles.tabbarItem,
-                            backgroundColor: isFocused ? "#78D5B3" : "transparent"
+                            backgroundColor: isFocused ? colors.turquoise : "transparent"
                         }}
                     >
                         {icons[route.name]}
-
-                        {/* <Text style={{ color: isFocused ? colors.primary : colors.text }}>
-                        {route.name}
-                        </Text> */}
                     </TouchableOpacity>
                     );
                 })}
@@ -81,15 +77,15 @@ const TabBar = ({ state, descriptors, navigation }) => {
 const styles = StyleSheet.create({
     tabbarArea: {
         position: 'absolute',
-        bottom: 34,
+        bottom: 68,
         width: '100%'
     },
     tabbar: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        backgroundColor: "#3c6b5ae6",
-        color: "#FFF",
+        backgroundColor: colors.hookers_green_opacity,
+        color: colors.white,
         width: 234,
         height: 68,
         borderRadius: 50,

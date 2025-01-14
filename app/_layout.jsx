@@ -18,12 +18,35 @@ const _layout = () => {
                 }}
             />
             <Tabs.Screen 
-                name="create"
+                name="camera"
                 options={{
-                    title: "Create"
+                    title: "Camera"
                 }}
             />
-
+            <Tabs.Screen 
+                name="search"
+                options={{
+                    title: "Search"
+                }}
+            />
+            <Tabs.Screen 
+                name="profile"
+                options={{
+                    title: "Profile"
+                }}
+            />
+            <Tabs.Screen 
+                name="subscribe"
+                options={{
+                    title: "Subscribe"
+                }}
+            />
+            <Tabs.Screen 
+                name="login"
+                options={{
+                    title: "Login"
+                }}
+            />
         </Tabs>
     )
 }
