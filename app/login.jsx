@@ -2,12 +2,12 @@ import { Text } from 'react-native'
 import React from 'react'
 import Screen from '../components/Screen'
 
-const Camera = () => {
+const Login = () => {
     return (
         <Screen>
-            <Text>Camera</Text>
+            <Text>Login</Text>
         </Screen>
     )
 }
 
-export default Camera
+export default Login

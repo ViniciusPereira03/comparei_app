@@ -1,13 +1,12 @@
-import { View, Text } from 'react-native'
+import { Text } from 'react-native'
 import React from 'react'
+import Screen from '../components/Screen'
 
 const Profile = () => {
     return (
-        <View>
-            <Text style={{
-                color: "#FFF"
-            }}>Profile</Text>
-        </View>
+        <Screen>
+            <Text>Profile</Text>
+        </Screen>
     )
 }
 

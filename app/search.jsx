@@ -1,13 +1,12 @@
-import { View, Text } from 'react-native'
+import { Text } from 'react-native'
 import React from 'react'
+import Screen from '../components/Screen'
 
 const Search = () => {
     return (
-        <View>
-            <Text style={{
-                color: "#FFF"
-            }}>Search</Text>
-        </View>
+        <Screen>
+            <Text>Search</Text>
+        </Screen>
     )
 }
 

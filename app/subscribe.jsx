@@ -2,12 +2,12 @@ import { Text } from 'react-native'
 import React from 'react'
 import Screen from '../components/Screen'
 
-const Camera = () => {
+const Subscribe = () => {
     return (
         <Screen>
-            <Text>Camera</Text>
+            <Text>Subscribe</Text>
         </Screen>
     )
 }
 
-export default Camera
+export default Subscribe
