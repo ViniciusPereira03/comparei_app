@@ -14,5 +14,37 @@ export const colors = {
     scarlet: "#F8370F",
     bronze: "#CD7F32",
     silver: "#C0C0C0",
-    gold: "#FFD700"
+    gold: "#FFD700",
+    font: {
+        to_background: {
+            white: "#000",
+            mint_cream: "#000",
+            mint_green: "#000",
+            mint_green_2: "#000",
+            turquoise: "#000",
+            hookers_green: "#FFF",
+            hookers_green_opacity: "#FFF",
+            dark_green: "#FFF",
+            black: "#FFF",
+            xanthous: "#000",
+            tomato: "#000",
+            coquelicot: "#FFF",
+            scarlet: "#FFF",
+            bronze: "#000",
+            silver: "#000",
+            gold: "#000",
+        }
+    }
 }
+
+export const getColorKeyByValue = (value) => {
+    const entries = Object.entries(colors);
+    for (const [key, colorValue] of entries) {
+        if (colorValue === value) return key;
+        if (typeof colorValue === 'object') {
+            const subKey = getColorKeyByValue(colorValue);
+            if (subKey) return subKey;
+        }
+    }
+    return null;
+  };
