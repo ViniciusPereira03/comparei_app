@@ -12,6 +12,7 @@ import { colors, getColorKeyByValue } from '../assets/colors/global';
  * @param {Object} props - As propriedades do botão.
  * @param {string} props.backgroundColor - Cor de fundo do botão (obrigatória).
  * @param {string} props.text - Texto exibido no botão (obrigatória).
+ * @param {string} props.accessibilityHint - Texto de acessibilidade do botão (obrigatória).
  * @param {'edit' | 'add' | 'success' | 'delete' | 'error'} [props.type] - Tipo de botão, determina o ícone exibido (opcional).
  * @param {boolean} [props.outline=false] - Define se o botão terá um estilo transparente (opcional).
  * @param {boolean} [props.uppercase=true] - Define se o texto será em caixa alta (opcional).
@@ -55,6 +56,9 @@ const Button = (props) => {
         <TouchableOpacity 
             style={styles.button} 
             activeOpacity={0.9} 
+            accessible={true}
+            accessibilityLabel={`Botão ${props.text}`}
+            accessibilityHint={props.accessibilityHint}
             {...props}
         >
             {props.type && (
