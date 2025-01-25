@@ -17,18 +17,21 @@ const TabsLayout = () => {
                         title: "Home"
                     }}
                 />
-                <Tabs.Screen 
-                    name="camera"
-                    options={{
-                        title: "Camera"
-                    }}
-                />
+
                 <Tabs.Screen 
                     name="search"
                     options={{
                         title: "Search"
                     }}
                 />
+                
+                <Tabs.Screen 
+                    name="camera"
+                    options={{
+                        title: "Camera"
+                    }}
+                />
+
                 <Tabs.Screen 
                     name="profile"
                     options={{

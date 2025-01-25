@@ -14,7 +14,7 @@ const Screen = (props) => {
             ...props.style
         },
         scroll: {
-            width: '100%',
+            flexGrow: 1,
             paddingHorizontal: 16,
         },
         view: {

@@ -1,4 +1,4 @@
-import { Text } from 'react-native'
+import { Text, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import Screen from '../../components/Screen'
 import Button from '../../components/Button'
@@ -9,20 +9,114 @@ import Range from '../../components/Range'
 import AnimatedModal from '../../components/Modal'
 import ProgressBar from '../../components/ProgressBar'
 import Card from '../../components/Card'
+import ImageHome from '../../assets/images/home/image_home.js'
+import { useAuth } from '../../contexts/authContext'
 
 const Home = () => {
-    const [text, setText] = useState("")
+    const { onLogout } = useAuth();
+
+    const [lists, setLists] = useState([])
     const [modalVisible, setModalVisible] = useState(false);
 
     useEffect(() => {
         console.log("HOME AQUI")
     }, [])
 
+    useEffect(() => {
+        console.log("lists: ", lists)
+    }, [lists])
+
     return (
         <Screen scroll>
-            <Text>Home</Text>
+            <View style={{
+                height: '100%',
+                marginVertical: 'auto',
+                alignItems: 'center',
+                justifyContent: 'center',
+            }}>
+                {lists.length > 0 ? (
+                    <View style={{width: '100%', paddingBottom: 100}}>
+                        {lists.map((l, i) => (
+                            <Card key={i}>
+                                <Text>Lista {i}</Text>
+                                <Text>Texto da lista: {l.value}</Text>
+                            </Card>
+                        ))}
 
-            <Input
+                        <Button 
+                            width='auto'
+                            backgroundColor={colors.scarlet}
+                            outline
+                            text="Logout"
+                            accessibilityHint="Pressione para criar uma lista!"
+                            type="error"
+                            onPress={() => {
+                                setLists([])
+                                onLogout()
+                            }}
+                        />
+                    </View>
+                ) : (
+                    <View style={{marginTop: "60%"}}>
+                        <ImageHome width={160} height={133.48} />
+
+                        <Button 
+                            width='auto'
+                            backgroundColor={colors.turquoise}
+                            text="Criar lista"
+                            accessibilityHint="Pressione para criar uma lista!"
+                            type="add"
+                            onPress={() => setLists([
+                                {value: 'Lista teste'},
+                                {value: 'Lista teste'},
+                                {value: 'Lista teste'},
+                                {value: 'Lista teste'},
+                                {value: 'Lista teste'},
+                                {value: 'Lista teste'},
+                                {value: 'Lista teste'},
+                                {value: 'Lista teste'},
+                                {value: 'Lista teste'},
+                                {value: 'Lista teste'},
+                                {value: 'Lista teste'},
+                                {value: 'Lista teste'},
+                                {value: 'Lista teste'},
+                                {value: 'Lista teste'},
+                                {value: 'Lista teste'},
+                                {value: 'Lista teste'},
+                                {value: 'Lista teste'},
+                            ])}
+                        />
+                    </View>
+                    // <View style={{width: '100%', alignItems: 'center'}}>
+
+                    //     <Button 
+                    //         width='auto'
+                    //         backgroundColor={colors.turquoise}
+                    //         text="Criar lista"
+                    //         accessibilityHint="Pressione para criar uma lista!"
+                    //         type="add"
+                    //         onPress={() => setLists([
+                    //             {value: 'Lista teste'},
+                    //             {value: 'Lista teste'},
+                    //             {value: 'Lista teste'},
+                    //             {value: 'Lista teste'},
+                    //             {value: 'Lista teste'},
+                    //             {value: 'Lista teste'},
+                    //             {value: 'Lista teste'},
+                    //             {value: 'Lista teste'},
+                    //             {value: 'Lista teste'},
+                    //             {value: 'Lista teste'},
+                    //         ])}
+                    //     />
+                    // </View>
+
+                    
+                )}
+            </View>
+
+            
+
+            {/* <Input
                 type="password"
                 label="Senha"
                 value={text}
@@ -82,17 +176,11 @@ const Home = () => {
                 />
 
                 <ProgressBar percentage={46} />
-            </Card>
+            </Card> */}
 
+            
 
-
-            <Button 
-                backgroundColor={colors.hookers_green}
-                text="testar"
-                accessibilityHint="Pressione para testar o botão!"
-                type="success"
-                onPress={() => setModalVisible(true)}
-            />
+            
 
             <AnimatedModal visible={modalVisible} onClose={() => setModalVisible(false)}>
                 <Text style={{ fontSize: 18, textAlign: 'center', marginBottom: 10 }}>Ordenar por</Text>

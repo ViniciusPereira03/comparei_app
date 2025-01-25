@@ -2,7 +2,7 @@ import React from 'react'
 import { StyleSheet, View } from 'react-native'
 import { colors } from '../assets/colors/global'
 
-const Card = ({children, direction}) => {
+const Card = ({props, children, direction}) => {
     const styles = StyleSheet.create({
         card: {
             margin: 8,
@@ -18,7 +18,7 @@ const Card = ({children, direction}) => {
     })
 
     return (
-        <View style={styles.card}>
+        <View style={styles.card} {...props}>
             {children}
         </View>
     )

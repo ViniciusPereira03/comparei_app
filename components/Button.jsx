@@ -60,6 +60,7 @@ const Button = (props) => {
             accessible={true}
             accessibilityLabel={`Botão ${props.text}`}
             accessibilityHint={props.accessibilityHint}
+            onPress={props.onPress}
             {...props}
         >
             {props.type && (
