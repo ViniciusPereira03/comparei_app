@@ -26,6 +26,7 @@ const Button = (props) => {
             width: props.width ? props.width : 256,
             height: 36,
             margin: 'auto',
+            marginTop: 24,
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'center',
@@ -59,6 +60,7 @@ const Button = (props) => {
             accessible={true}
             accessibilityLabel={`Botão ${props.text}`}
             accessibilityHint={props.accessibilityHint}
+            onPress={props.onPress}
             {...props}
         >
             {props.type && (

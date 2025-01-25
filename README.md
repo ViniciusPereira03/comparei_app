@@ -1,50 +1,44 @@
-# Welcome to your Expo app 👋
+# Comparei 📲
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+**Comparei** é um aplicativo colaborativo que permite aos usuários montarem suas listas de compras e pesquisarem, em tempo real, os mercados da região com o melhor preço para cada produto. A sustentabilidade do aplicativo será garantida pela comunidade de usuários, que será responsável por cadastrar e atualizar os dados de produtos e preços. 
 
-## Get started
+O aplicativo também oferece um indicador de confiabilidade, baseado na data da última atualização de preço e na confirmação do preço feita por outros usuários. Com isso, o usuário poderá planejar com mais segurança seu percurso de compras, sabendo onde cada item está mais vantajoso.
 
-1. Install dependencies
+## Funcionalidades ⚙️
 
+- **Listas de Compras**: Crie e gerencie suas listas de compras de maneira prática.
+- **Pesquisa de Preços em Tempo Real**: Encontre os melhores preços para seus produtos nos mercados da sua região.
+- **Sistema de Confiabilidade**: Receba alertas sobre a precisão dos preços com base na data de atualização e confirmações de outros usuários.
+- **Contribuição da Comunidade**: Usuários podem cadastrar e atualizar produtos e preços, ajudando a manter o banco de dados do aplicativo sempre atualizado.
+
+## Como Executar o Projeto 🛠️
+
+### Pré-requisitos
+
+Certifique-se de ter as seguintes ferramentas instaladas:
+
+- Node.js (versão >=21.7.3)
+- Expo CLI
+
+### Instalação
+
+1. Clone o repositório:
+
+   ```bash
+   git clone https://github.com/ViniciusPereira03/comparei_app.git
+   cd comparei_app
+   ```
+
+2. Instale as dependências:
    ```bash
    npm install
    ```
 
-2. Start the app
-
+3. Inicie a aplicação:
    ```bash
     npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+Para uma melhor experiência, baixe o aplicativo `Expo Go` em sua loja de aplicativos e escaneie o QRcode gerado para instalar a aplicação
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Você também pode visualizar a aplicação pelo navegador pressionando `w` no terminal.
