@@ -11,7 +11,7 @@ const TabsLayout = () => {
     useEffect(() => {
         const inAuthGroup = segments[0] === '(protected)'
 
-        if (authState?.authenticated === null && inAuthGroup) {
+        if (!authState?.authenticated && inAuthGroup) {
             router.replace('/')
         } else if (authState?.authenticated === true) {
             router.replace('/(protected)/home')
