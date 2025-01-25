@@ -19,9 +19,9 @@ export const colors = {
         to_background: {
             white: "#000",
             mint_cream: "#000",
-            mint_green: "#000",
+            mint_green: "#3C6B5A",
             mint_green_2: "#000",
-            turquoise: "#000",
+            turquoise: "#FFF",
             hookers_green: "#FFF",
             hookers_green_opacity: "#FFF",
             dark_green: "#FFF",

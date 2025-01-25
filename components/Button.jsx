@@ -26,6 +26,7 @@ const Button = (props) => {
             width: props.width ? props.width : 256,
             height: 36,
             margin: 'auto',
+            marginTop: 24,
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'center',

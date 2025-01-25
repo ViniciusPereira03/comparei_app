@@ -10,7 +10,7 @@ const TabBar = ({ state, descriptors, navigation }) => {
     const { buildHref } = useLinkBuilder();
 
     const icons = {
-        index: <FontAwesome6 name="list-check" size={24} color={`${colors.white}`} />,
+        home: <FontAwesome6 name="list-check" size={24} color={`${colors.white}`} />,
         search: <FontAwesome5 name="search" size={24} color={`${colors.white}`} />,
         camera: <FontAwesome6 name="camera" size={24} color={`${colors.white}`} />,
         profile: <FontAwesome name="user" size={24} color={`${colors.white}`} />,
@@ -21,52 +21,51 @@ const TabBar = ({ state, descriptors, navigation }) => {
             <View style={styles.tabbar}>
                 {state.routes.map((route, index) => {
                     const { options } = descriptors[route.key];
-                    const label =
                     options.tabBarLabel !== undefined
                         ? options.tabBarLabel
                         : options.title !== undefined
                         ? options.title
                         : route.name;
     
-                    if(['_sitemap', '+not-found', 'login', 'subscribe'].includes(route.name)) return null;
+                    if(['_sitemap', '+not-found', 'subscribe'].includes(route.name)) return null;
     
                     const isFocused = state.index === index;
     
                     const onPress = () => {
-                    const event = navigation.emit({
-                        type: 'tabPress',
-                        target: route.key,
-                        canPreventDefault: true,
-                    });
-    
-                    if (!isFocused && !event.defaultPrevented) {
-                        navigation.navigate(route.name, route.params);
-                    }
+                        const event = navigation.emit({
+                            type: 'tabPress',
+                            target: route.key,
+                            canPreventDefault: true,
+                        });
+        
+                        if (!isFocused && !event.defaultPrevented) {
+                            navigation.navigate(route.name, route.params);
+                        }
                     };
     
                     const onLongPress = () => {
-                    navigation.emit({
-                        type: 'tabLongPress',
-                        target: route.key,
-                    });
+                        navigation.emit({
+                            type: 'tabLongPress',
+                            target: route.key,
+                        });
                     };
     
                     return (
-                    <TouchableOpacity
-                        key={route.name}
-                        href={buildHref(route.name, route.params)}
-                        accessibilityState={isFocused ? { selected: true } : {}}
-                        accessibilityLabel={options.tabBarAccessibilityLabel}
-                        testID={options.tabBarButtonTestID}
-                        onPress={onPress}
-                        onLongPress={onLongPress}
-                        style={{
-                            ...styles.tabbarItem,
-                            backgroundColor: isFocused ? colors.turquoise : "transparent"
-                        }}
-                    >
-                        {icons[route.name]}
-                    </TouchableOpacity>
+                        <TouchableOpacity
+                            key={route.name}
+                            href={buildHref(route.name, route.params)}
+                            accessibilityState={isFocused ? { selected: true } : {}}
+                            accessibilityLabel={options.tabBarAccessibilityLabel}
+                            testID={options.tabBarButtonTestID}
+                            onPress={onPress}
+                            onLongPress={onLongPress}
+                            style={{
+                                ...styles.tabbarItem,
+                                backgroundColor: isFocused ? colors.turquoise : "transparent"
+                            }}
+                        >
+                            {icons[`${route.name}`]}
+                        </TouchableOpacity>
                     );
                 })}
             </View>
