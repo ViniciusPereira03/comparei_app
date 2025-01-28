@@ -17,18 +17,27 @@ const Input = ({ type = 'text', label, value, onChangeText, required = false, er
   const [secureTextEntry, setSecureTextEntry] = useState(type === 'password');
   const [isFocused, setIsFocused] = useState(false);
   const labelAnim = useRef(new Animated.Value(value ? 1 : 0)).current;
+  const labelHide = useRef(new Animated.Value(value ? 1 : 0)).current;
 
   const togglePasswordVisibility = () => {
     setSecureTextEntry((prev) => !prev);
   };
 
   useEffect(() => {
-    Animated.timing(labelAnim, {
-      toValue: isFocused || value ? 1 : 0,
-      duration: 200,
-      useNativeDriver: false,
-    }).start();
-  }, [isFocused, value]);
+    if (props.hidePlaceholder) {
+      Animated.timing(labelHide, {
+        toValue: isFocused || value ? 1 : 0,
+        duration: 0,
+        useNativeDriver: false,
+      }).start();
+    } else {
+      Animated.timing(labelAnim, {
+        toValue: isFocused || value ? 1 : 0,
+        duration: 200,
+        useNativeDriver: false,
+      }).start();
+    }
+  }, [isFocused, value, props.hidePlaceholder]);
 
   const labelStyle = {
     top: labelAnim.interpolate({
@@ -38,13 +47,18 @@ const Input = ({ type = 'text', label, value, onChangeText, required = false, er
     fontSize: labelAnim.interpolate({
       inputRange: [0, 1],
       outputRange: [16, 12],
+    }),
+    opacity: labelHide.interpolate({
+      inputRange: [0, 1],
+      outputRange: [1, 0]
     })
   };
 
   const styles = StyleSheet.create({
     container: {
       position: 'relative',
-      marginVertical: 8,
+      marginVertical: props.hidePlaceholder ? 0 : 8,
+      marginTop: props.hidePlaceholder ? -16 : 0,
     },
     label: {
       position: 'absolute',
