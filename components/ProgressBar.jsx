@@ -9,7 +9,7 @@ const ProgressBar = ({ percentage }) => {
         container: {
             width: '100%',
             alignItems: 'center',
-            paddingVertical: 16,
+            paddingVertical: 8,
         },
         label: {
             fontSize: 14,

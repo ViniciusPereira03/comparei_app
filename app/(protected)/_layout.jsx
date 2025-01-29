@@ -38,6 +38,20 @@ const TabsLayout = () => {
                         title: "Profile"
                     }}
                 />
+                
+                <Tabs.Screen 
+                    name="createList"
+                    options={{
+                        title: "Criar nova lista"
+                    }}
+                />
+                
+                <Tabs.Screen 
+                    name="list"
+                    options={{
+                        title: "Lista de compras"
+                    }}
+                />
             </Tabs>
         </GestureHandlerRootView>
     )
