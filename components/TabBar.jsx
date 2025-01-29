@@ -8,6 +8,14 @@ import { colors } from '../assets/colors/global';
 
 const TabBar = ({ state, descriptors, navigation }) => {
     const { buildHref } = useLinkBuilder();
+    const hideTabBarList = [
+        'createList'
+    ]
+    const routeName = state.routes[state.index].name;
+
+    if (hideTabBarList.includes(routeName)) {
+        return
+    }
 
     const icons = {
         home: <FontAwesome6 name="list-check" size={24} color={`${colors.white}`} />,
@@ -27,7 +35,7 @@ const TabBar = ({ state, descriptors, navigation }) => {
                         ? options.title
                         : route.name;
     
-                    if(['_sitemap', '+not-found', 'subscribe'].includes(route.name)) return null;
+                    if(['_sitemap', '+not-found', 'subscribe', 'createList', 'list'].includes(route.name)) return null;
     
                     const isFocused = state.index === index;
     

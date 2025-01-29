@@ -25,8 +25,8 @@ const Button = (props) => {
         button: {
             width: props.width ? props.width : 256,
             height: 36,
-            margin: 'auto',
-            marginTop: 24,
+            margin: props.margin ? props.margin : 0,
+            marginTop: props.marginTop ? props.marginTop : 24,
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'center',

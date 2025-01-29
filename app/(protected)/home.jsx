@@ -3,14 +3,11 @@ import React, { useEffect, useState } from 'react'
 import Screen from '../../components/Screen'
 import Button from '../../components/Button'
 import { colors } from '../../assets/colors/global'
-import Input from '../../components/Input'
-import Select from '../../components/Select'
-import Range from '../../components/Range'
 import AnimatedModal from '../../components/Modal'
-import ProgressBar from '../../components/ProgressBar'
 import Card from '../../components/Card'
 import ImageHome from '../../assets/images/home/image_home.js'
 import { useAuth } from '../../contexts/authContext'
+import { router } from 'expo-router'
 
 const Home = () => {
     const { onLogout } = useAuth();
@@ -66,51 +63,12 @@ const Home = () => {
                             text="Criar lista"
                             accessibilityHint="Pressione para criar uma lista!"
                             type="add"
-                            onPress={() => setLists([
-                                {value: 'Lista teste'},
-                                {value: 'Lista teste'},
-                                {value: 'Lista teste'},
-                                {value: 'Lista teste'},
-                                {value: 'Lista teste'},
-                                {value: 'Lista teste'},
-                                {value: 'Lista teste'},
-                                {value: 'Lista teste'},
-                                {value: 'Lista teste'},
-                                {value: 'Lista teste'},
-                                {value: 'Lista teste'},
-                                {value: 'Lista teste'},
-                                {value: 'Lista teste'},
-                                {value: 'Lista teste'},
-                                {value: 'Lista teste'},
-                                {value: 'Lista teste'},
-                                {value: 'Lista teste'},
-                            ])}
+                            onPress={() => router.replace({
+                                pathname: '/createList',
+                                params: {}
+                            })}
                         />
                     </View>
-                    // <View style={{width: '100%', alignItems: 'center'}}>
-
-                    //     <Button 
-                    //         width='auto'
-                    //         backgroundColor={colors.turquoise}
-                    //         text="Criar lista"
-                    //         accessibilityHint="Pressione para criar uma lista!"
-                    //         type="add"
-                    //         onPress={() => setLists([
-                    //             {value: 'Lista teste'},
-                    //             {value: 'Lista teste'},
-                    //             {value: 'Lista teste'},
-                    //             {value: 'Lista teste'},
-                    //             {value: 'Lista teste'},
-                    //             {value: 'Lista teste'},
-                    //             {value: 'Lista teste'},
-                    //             {value: 'Lista teste'},
-                    //             {value: 'Lista teste'},
-                    //             {value: 'Lista teste'},
-                    //         ])}
-                    //     />
-                    // </View>
-
-                    
                 )}
             </View>
 
