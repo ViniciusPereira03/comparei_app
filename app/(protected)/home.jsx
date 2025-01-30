@@ -68,6 +68,26 @@ const Home = () => {
                                 params: {}
                             })}
                         />
+                        <Button 
+                            width='auto'
+                            backgroundColor={colors.turquoise}
+                            text="c produto"
+                            accessibilityHint=""
+                            onPress={() => router.replace({
+                                pathname: '/createProduct',
+                                params: {}
+                            })}
+                        />
+                        <Button 
+                            width='auto'
+                            backgroundColor={colors.turquoise}
+                            text="e produto"
+                            accessibilityHint=""
+                            onPress={() => router.replace({
+                                pathname: '/editProduct',
+                                params: {}
+                            })}
+                        />
                     </View>
                 )}
             </View>

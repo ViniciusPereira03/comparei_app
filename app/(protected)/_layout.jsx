@@ -52,6 +52,21 @@ const TabsLayout = () => {
                         title: "Lista de compras"
                     }}
                 />
+                
+                <Tabs.Screen 
+                    name="createProduct"
+                    options={{
+                        title: "Criar novo produto"
+                    }}
+                />
+
+                                
+                <Tabs.Screen 
+                    name="editProduct"
+                    options={{
+                        title: "Editar produto"
+                    }}
+                />
             </Tabs>
         </GestureHandlerRootView>
     )
