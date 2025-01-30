@@ -9,8 +9,20 @@ import { colors } from '../assets/colors/global';
 const TabBar = ({ state, descriptors, navigation }) => {
     const { buildHref } = useLinkBuilder();
     const hideTabBarList = [
-        'createList'
+        'createList',
+        'createProduct',
+        'editProduct',
     ]
+    const hideMenu = [
+        '_sitemap', 
+        '+not-found', 
+        'subscribe', 
+        'createList', 
+        'list', 
+        'createProduct',
+        'editProduct',
+
+    ];
     const routeName = state.routes[state.index].name;
 
     if (hideTabBarList.includes(routeName)) {
@@ -35,7 +47,7 @@ const TabBar = ({ state, descriptors, navigation }) => {
                         ? options.title
                         : route.name;
     
-                    if(['_sitemap', '+not-found', 'subscribe', 'createList', 'list'].includes(route.name)) return null;
+                    if(hideMenu.includes(route.name)) return null;
     
                     const isFocused = state.index === index;
     
