@@ -35,9 +35,9 @@ const Button = (props) => {
             borderStyle: 'solid',
             borderColor: props.backgroundColor,
             borderRadius: 4,
-            paddingVertical: 8,
-            paddingHorizontal: 16,
-            gap: 8,
+            paddingVertical: props.text === '' ? 0 : 8,
+            paddingHorizontal: props.text === '' ? 0 : 16,
+            gap: props.text === '' ? 0 : 8,
         },
         text: {
             color: props.outline ? props.backgroundColor : colors.font.to_background[getColorKeyByValue(props.backgroundColor)],
@@ -46,11 +46,11 @@ const Button = (props) => {
     });
 
     const icons = {
-        edit: <Entypo name="edit" size={12} color={`${styles.text.color}`} />,
-        add: <AntDesign name="plus" size={12} color={`${styles.text.color}`} />,
-        success: <Feather name="check" size={12} color={`${styles.text.color}`} />,
-        delete: <MaterialIcons name="delete" size={12} color={`${styles.text.color}`} />,
-        error: <AntDesign name="close" size={12} color={`${styles.text.color}`} />,
+        edit: <Entypo name="edit" size={16} color={`${styles.text.color}`} />,
+        add: <AntDesign name="plus" size={16} color={`${styles.text.color}`} />,
+        success: <Feather name="check" size={16} color={`${styles.text.color}`} />,
+        delete: <MaterialIcons name="delete" size={16} color={`${styles.text.color}`} />,
+        error: <AntDesign name="close" size={16} color={`${styles.text.color}`} />,
     }
 
     return (
@@ -58,7 +58,7 @@ const Button = (props) => {
             style={styles.button} 
             activeOpacity={0.9} 
             accessible={true}
-            accessibilityLabel={`Botão ${props.text}`}
+            accessibilityLabel={props.text ? `Botão ${props.text}` : props.accessibilityLabel}
             accessibilityHint={props.accessibilityHint}
             onPress={props.onPress}
             {...props}
@@ -67,7 +67,7 @@ const Button = (props) => {
                 <>{icons[props.type]}</>
             )}
 
-            <Text style={styles.text}>{props.text}</Text>
+            {props.text && <Text style={styles.text}>{props.text}</Text>}
         </TouchableOpacity>
     )
 }
