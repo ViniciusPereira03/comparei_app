@@ -12,7 +12,7 @@ const TabBar = ({ state, descriptors, navigation }) => {
         'createList',
         'createProduct',
         'editProduct',
-        'camera',
+        'cameraSearch',
     ]
     const hideMenu = [
         '_sitemap', 
@@ -22,7 +22,7 @@ const TabBar = ({ state, descriptors, navigation }) => {
         'list', 
         'createProduct',
         'editProduct',
-
+        'cameraSearch',
     ];
     const routeName = state.routes[state.index].name;
 

@@ -1,202 +1,188 @@
-import { StyleSheet, View, TouchableOpacity } from 'react-native'
-import React, { useEffect, useRef, useState } from 'react'
-import { CameraView, useCameraPermissions } from 'expo-camera';
-import { colors } from '../../assets/colors/global';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { router } from 'expo-router';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import React, { useCallback, useEffect, useState } from 'react'
+import Screen from '../../components/Screen.jsx'
+import { router, useLocalSearchParams,  } from 'expo-router'
+import { colors } from '../../assets/colors/global.jsx'
+import BackButton from '../../components/BackButton.jsx'
+import Button from '../../components/Button.jsx'
+import Card from '../../components/Card.jsx'
+import Badge from '../../components/Badge.jsx'
+import ProgressBar from '../../components/ProgressBar.jsx'
+import { format } from 'date-fns';
+import { useFocusEffect } from '@react-navigation/native';
+
 
 const Camera = () => {
-    let cameraRef = useRef();
-    const [permission, requestPermission] = useCameraPermissions();
-    const [photo, setPhoto] = useState('');
-    const [barcodeMode, setBarcodeMode] = useState(false)
-    const [barcodeValue, setBarcodeValue] = useState('');
+    const params = useLocalSearchParams();
+    const [item, setItems] = useState(false);
 
-        
-
-    
-    useEffect(() => {
-        if (permission) {
-            if (!permission.granted) {
-                requestPermission()
-            }
-        }
-    }, [permission, permission])
-
-
-    const takePic = async () => {
-        let options = {
-            quality: 1,
-            base64: true,
-            exif: false
-        }
-
-        let newPhoto = await cameraRef.current.takePictureAsync(options);
-        setPhoto(newPhoto)
-
-        console.log(newPhoto)
+    const confirmarValor = () => {
+        console.log("Confirmar valor")
     }
 
-    const scanner = (e) => {
-        setBarcodeValue(e.data)
+    const editarValor = () => {
+        console.log("Editar valor")
     }
 
-    useEffect(() => {
-        if (barcodeValue) {
-            alert("Código de barras escaneado com sucesso!")
-            router.replace({
-                pathname: '/list',
-                params: {
-                    id: barcodeValue
+    const loadList = () => {
+        if (params.id) {
+            setItems(
+                {
+                    image: "https://example.com/images/arroz.jpg",
+                    product: "Arroz t5kg",
+                    markets: [
+                        {
+                            market: "Supermercado ABC",
+                            confidence: 95,
+                            price: 23.99,
+                            updatedAt: "2025-01-25"
+                        },
+                        {
+                            market: "Mercado 123",
+                            confidence: 30,
+                            price: 16.99,
+                            updatedAt: "2024-01-30"
+                        },
+                        {
+                            market: "Mercado do zé",
+                            confidence: 57,
+                            price: 22.50,
+                            updatedAt: "2025-01-20"
+                        },
+                    ]
                 }
-            })
+            )
+        } else {
+            router.replace('/cameraSearch')
         }
-    }, [barcodeValue])
+    }
 
+    useFocusEffect(
+        useCallback(() => {
+          loadList();
+
+          return () => {
+            setItems(null)
+            params.id = false;
+          }
+        }, [params.id])
+    );
+
+    const styled = StyleSheet.create({
+        title: {
+            color: colors.hookers_green,
+            fontSize: 24,
+        },
+        price: {
+            fontSize: 24,
+        },
+        update: {
+            fontSize: 12,
+        }
+    })
 
     return (
-        <>
-            {barcodeMode ? (
-                <View style={styles.container}>
+        <Screen scroll>
+            <View style={{
+                height: '100%',
+                marginVertical: 'auto',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+            }}> 
+                <View style={{
+                    width: '100%',
+                    flexDirection: 'row',
+                    justifyContent: 'flex-start',
+                    alignItems: 'center'
+                }}>
+                    <BackButton 
+                        accessibilityHint="Pressione para voltar"
+                        onPress={() => router.replace('/search')}
+                    />
+                    
+                    <Text style={styled.title}>Produto encontrado</Text>
+                </View>
 
-                    <CameraView
-                        ref={cameraRef}
-                        style={styles.camera}
-                        enableTorch={false}
-                        mode="picture"
-                        barcodeScannerSettings={{
-                            barcodeTypes: ['aztec', 'codabar', 'code128', 'code39', 'code93', 'ean8', 'ean13', 'upc_a', 'upc_e'],
+                {item && (
+                    <Card 
+                        width="100%"
+                        style={{
+                            justifyContent: 'flex-start',
+                            alignItems: 'flex-start',
                         }}
-                        onBarcodeScanned={(e) => scanner(e)}
                     >
-                        <View style={styles.buttonContainer}>
-                            <View style={{ width: 32 }}></View>
-        
-                            <TouchableOpacity style={styles.barcode_button} onPress={() => setBarcodeMode(false)}>
-                                <MaterialCommunityIcons name="barcode-scan" size={80} color={colors.white} />
-                            </TouchableOpacity>
+                        <View style={{
+                            flexDirection: 'column',
+                            justifyContent: 'flex-start',
+                            alignItems: 'flex-start'
+                        }}>
+                            <View style={{
+                                flexDirection: 'row',
+                                alignItems: 'flex-start',
+                                paddingVertical: 8
+                            }}>
+                                <Image source={{uri: "https://io.convertiez.com.br/m/superpaguemenos/shop/products/images/17846/small/arroz-prato-fino-tipo-1-5kg_58932.jpg"}} width={136} height={136}/>
+                                <Text style={{fontSize: 24}}>{item.product}</Text>
+                            </View>
 
-                            <TouchableOpacity style={styles.picture_button_2} onPress={() => setBarcodeMode(false)}>
-                                <View style={styles.button_inside_2}></View>
-                            </TouchableOpacity>
+                            {item.markets.map((m, index) => (
+                                    <View key={index} style={{
+                                    width: "100%",
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    backgroundColor: index % 2 === 0 ? colors.mint_green : colors.white,
+                                    paddingVertical: 8
+                                }}>
+                                    <View>
+                                        <Badge text={m.market} backgroundColor={colors.hookers_green}/>
+                                        <ProgressBar percentage={m.confidence}/>
+                                        <Text style={styled.update}>Atualizado em: {format(new Date(m.updatedAt), "dd/MM/yyyy")}</Text>
+                                    </View> 
+
+                                    <View
+                                        style={{
+                                            flexDirection: 'row',
+                                            alignItems: 'center'
+                                        }}
+                                    >
+                                        <Text style={styled.price}>R$ {m.price}</Text>
+                                        
+                                        
+                                        <Button 
+                                            type='edit'
+                                            backgroundColor={colors.turquoise}
+                                            width={32}
+                                            text=''
+                                            accessibilityLabel="Botão para editar produto"
+                                            accessibilityHint="Pressione para editar o produto"
+                                            onPress={() => editarValor()}
+                                            margin={2}
+                                            marginTop={-1}
+                                        />
+
+                                        <Button 
+                                            type='add'
+                                            backgroundColor={colors.turquoise}
+                                            width={32}
+                                            text=''
+                                            accessibilityLabel="Botão para adicoinar produto a lista"
+                                            accessibilityHint="Pressione para adicionar o produto a sua lista"
+                                            onPress={() => confirmarValor()}
+                                            margin={2}
+                                            marginTop={-1}
+
+                                        />
+                                    </View>
+                                </View>
+                            ))}
+                            
                         </View>
-                    </CameraView>
-                    <View style={styles.delimiter_start}></View>
-                    <View style={styles.scanner}></View>
-                    <View style={styles.delimiter_end}></View>
-                </View>
-                
-            ) : (
-                <View style={styles.container}>
-                    <CameraView
-                        ref={cameraRef}
-                        style={styles.camera}
-                        enableTorch={false}
-                        mode="picture"
-                    >
-                        <View style={styles.buttonContainer}>
-                            <View style={{ width: 32 }}></View>
-
-                            <TouchableOpacity style={styles.picture_button} onPress={takePic}>
-                                <View style={styles.button_inside}></View>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity style={styles.barcode_button} onPress={() => setBarcodeMode(true)}>
-                                <MaterialCommunityIcons name="barcode-scan" size={32} color={colors.white} />
-                            </TouchableOpacity>
-                        </View>
-                    </CameraView>
-                </View>
-
-            )}
-        </>
+                    </Card>  
+                )}
+            </View>
+        </Screen>
     )
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-    },
-    message: {
-        textAlign: 'center',
-        paddingBottom: 10,
-    },
-    camera: {
-        flex: 1,
-    },
-    buttonContainer: {
-        width: '100%',
-        height: 80,
-        position: 'absolute',
-        bottom: 68,
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        alignItems: 'center',
-        backgroundColor: 'transparent',
-        
-    },
-    picture_button: {
-        alignItems: 'center',
-        width: 80,
-        height: 80,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        borderWidth: 4,
-        borderColor: colors.white,
-        borderRadius: 100,
-    },
-    picture_button_2: {
-        alignItems: 'center',
-        width: 32,
-        height: 32,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        borderWidth: 3,
-        borderColor: colors.white,
-        borderRadius: 100,
-    },
-    button_inside: {
-        width: 64,
-        height: 64,
-        backgroundColor: colors.white,
-        borderRadius: 100,
-        margin: 'auto'
-    },
-    button_inside_2: {
-        width: 20,
-        height: 20,
-        backgroundColor: colors.white,
-        borderRadius: 100,
-        margin: 'auto'
-    },
-    barcode_button: {
-        alignItems: 'center',
-    },
-    text: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: 'white',
-    },
-    delimiter_start: {
-        height: '100%',
-        width: '40%',
-        position: 'absolute',
-        left: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)'
-    },
-    delimiter_end: {
-        height: '100%',
-        width: '40%',
-        position: 'absolute',
-        right: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)'
-    },
-    scanner: {
-        height: '100%',
-        width: 4,
-        position: 'absolute',
-        backgroundColor: colors.scarlet,
-        left: '49.5%'
-    }
-});
 
 export default Camera
