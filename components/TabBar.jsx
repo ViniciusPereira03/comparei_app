@@ -12,6 +12,7 @@ const TabBar = ({ state, descriptors, navigation }) => {
         'createList',
         'createProduct',
         'editProduct',
+        'camera',
     ]
     const hideMenu = [
         '_sitemap', 
