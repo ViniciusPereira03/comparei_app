@@ -3,7 +3,7 @@ import { StyleSheet, View, Text } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { colors } from '../assets/colors/global';
 
-const Range = ({ min = 0, max = 100, initial = 50, step = 1, unidade = "", onChange }) => {
+const Range = ({ min = 0, max = 100, initial = 50, step = 1, unidade = "", onChange, marginVertical, width }) => {
     const [value, setValue] = useState(initial);
 
     const handleValueChange = (val) => {
@@ -12,6 +12,23 @@ const Range = ({ min = 0, max = 100, initial = 50, step = 1, unidade = "", onCha
         onChange(val);
         }
     };
+
+    const styles = StyleSheet.create({
+      container: {
+        marginVertical: marginVertical ? marginVertical : 16,
+        alignItems: 'center',
+      },
+      slider: {
+        width: width ? width : '90%',
+        height: 40,
+      },
+      valueText: {
+        marginTop: 8,
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: colors.hookers_green,
+      },
+    });
 
     return (
         <View style={styles.container}>
@@ -46,21 +63,6 @@ const Range = ({ min = 0, max = 100, initial = 50, step = 1, unidade = "", onCha
     );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    marginVertical: 16,
-    alignItems: 'center',
-  },
-  slider: {
-    width: '90%',
-    height: 40,
-  },
-  valueText: {
-    marginTop: 8,
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: colors.hookers_green,
-  },
-});
+
 
 export default Range;
