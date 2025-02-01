@@ -2,10 +2,11 @@ import React from 'react'
 import { StyleSheet, View } from 'react-native'
 import { colors } from '../assets/colors/global'
 
-const Card = ({props, children, direction}) => {
+const Card = ({props, children, direction, width, style}) => {
     const styles = StyleSheet.create({
         card: {
-            margin: 8,
+            width: width ? width : 'auto',
+            margin: 2,
             backgroundColor: colors.white,
             borderRadius: 4,
             shadowColor: 'rgba(0, 0, 0, 0.25)',
@@ -13,7 +14,8 @@ const Card = ({props, children, direction}) => {
             shadowOpacity: 1,
             elevation: 4,
             padding: 8,
-            flexDirection: direction ? direction : 'column'
+            flexDirection: direction ? direction : 'column',
+            ...style
         }
     })
 
