@@ -9,6 +9,7 @@ import Card from '../../components/Card.jsx'
 import Badge from '../../components/Badge.jsx'
 import ProgressBar from '../../components/ProgressBar.jsx'
 import { format } from 'date-fns';
+import { getListProducts } from '../../services/mock/lists/list.js'
 
 
 const List = () => {
@@ -27,24 +28,15 @@ const List = () => {
         console.log("Remover item da lista")
     }
 
-    const loadList = () => {
+    const loadList = async () => {
         console.log(params.id)
         if (params.id) {
-            setItems([
-                {
-                    "image": "https://example.com/images/arroz.jpg",
-                    "market": "Supermercado ABC",
-                    "product": "Arroz treste teste teste teste asyuagosydu teste 5kg",
-                    "confidence": 95,
-                    "price": 23.99,
-                    "updatedAt": "2025-01-25"
-                }
-            ])
+            const response = await getListProducts(params.id)
+            setItems(response)
         }
     }
 
     useEffect(() => {
-        console.log("LOAD LIST")
         loadList();
 
         return () => {}
@@ -70,6 +62,7 @@ const List = () => {
                 marginVertical: 'auto',
                 alignItems: 'center',
                 justifyContent: 'space-between',
+                paddingBottom: 88,
             }}> 
                 <View style={{
                     width: '100%',

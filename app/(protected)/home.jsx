@@ -8,6 +8,8 @@ import Card from '../../components/Card'
 import ImageHome from '../../assets/images/home/image_home.js'
 import { useAuth } from '../../contexts/authContext'
 import { router } from 'expo-router'
+import { getLists } from '../../services/mock/lists/list.js'
+import Badge from '../../components/Badge.jsx'
 
 const Home = () => {
     const { onLogout } = useAuth();
@@ -15,13 +17,21 @@ const Home = () => {
     const [lists, setLists] = useState([])
     const [modalVisible, setModalVisible] = useState(false);
 
-    useEffect(() => {
-        console.log("HOME AQUI")
-    }, [])
+
+    const getLIsts = async () => {
+        try {
+            const response = await getLists()
+            console.log(response)
+            setLists(response)
+        } catch (error) {
+            
+        }
+    }
 
     useEffect(() => {
-        console.log("lists: ", lists)
-    }, [lists])
+        getLIsts()
+    }, [])
+
 
     return (
         <Screen scroll>
@@ -31,12 +41,46 @@ const Home = () => {
                 alignItems: 'center',
                 justifyContent: 'center',
             }}>
+
+                <View style={{
+                    width: '100%',
+                    paddingBottom: 16
+                }}>
+                    <Button 
+                        width='100%'
+                        backgroundColor={colors.turquoise}
+                        text="Criar lista"
+                        accessibilityHint="Pressione para criar uma lista!"
+                        type="add"
+                        onPress={() => router.replace({
+                            pathname: '/createList',
+                            params: {}
+                        })}
+                    />
+                </View>
+
                 {lists.length > 0 ? (
                     <View style={{width: '100%', paddingBottom: 100}}>
                         {lists.map((l, i) => (
                             <Card key={i}>
-                                <Text>Lista {i}</Text>
-                                <Text>Texto da lista: {l.value}</Text>
+                                <View
+                                    style={{
+                                        width: '100%',
+                                        flexDirection: 'row',
+                                        alignItems: 'flex-start',
+                                        justifyContent: 'space-between',
+                                    }}
+                                >
+                                    <Text style={{fontSize: 18, fontWeight: 'bold', paddingBottom: 16}}>{l.title}</Text>
+
+                                    <Badge 
+                                        width
+                                        text={l.status ? `Em andamento` : `Finalizada`}
+                                        backgroundColor={l.status ? colors.hookers_green : colors.scarlet}
+                                        outline
+                                    />
+                                </View>
+                                <Text>Criada em: {l.created}</Text>
                             </Card>
                         ))}
 
@@ -68,7 +112,7 @@ const Home = () => {
                                 params: {}
                             })}
                         />
-                        <Button 
+                        {/* <Button 
                             width='auto'
                             backgroundColor={colors.turquoise}
                             text="c produto"
@@ -87,7 +131,7 @@ const Home = () => {
                                 pathname: '/editProduct',
                                 params: {}
                             })}
-                        />
+                        /> */}
                     </View>
                 )}
             </View>

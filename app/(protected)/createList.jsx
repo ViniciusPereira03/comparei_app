@@ -8,6 +8,7 @@ import BackButton from '../../components/BackButton.jsx'
 
 import ImageCreateList from '../../assets/images/createList/image_createList.js'
 import ShortButton from '../../components/ShortButton.jsx'
+import { postList } from '../../services/mock/lists/list.js'
 
 
 const CreateList = () => {
@@ -27,22 +28,18 @@ const CreateList = () => {
         }
     })
 
-    const criarLista = () => {
-        console.log("ITEM: ", item)
-        console.log("Criar lista de compras: ", nomeLista);
+    const criarLista = async () => {
+        const response = await postList({
+            title: nomeLista,
+            ...item
+        })
 
-        console.log(item.product)
-
-        if (item.product) {
-            router.replace({
-                pathname: '/list',
-                params: {
-                    id: 123
-                }
-            })
-        } else {
-            router.replace('/list')
-        }
+        router.replace({
+            pathname: '/list',
+            params: {
+                id: response.id
+            }
+        })
     }
     
     useEffect(() => {
