@@ -5,20 +5,22 @@ import Range from '../../components/Range'
 import { colors } from '../../assets/colors/global'
 import BackButton from '../../components/BackButton'
 import { router } from 'expo-router'
+import { getUser, putDistanceRadius } from '../../services/mock/users/user'
 
 const Profile = () => {
-    const [profile, setProfile] = useState({
-        photo: 'https://thispersondoesnotexist.com/',
-        name: 'Nome de Usuário',
-        username: 'username_03',
-        distance_radius: 15,
-        level: Math.floor(Math.random() * (99 - 1 + 1) + 1)
-    })
+    const [profile, setProfile] = useState()
     const [medal, setMedal] = useState('bronze')
+    const [load, setLoad] = useState(false)
 
+    const updateDistanceRadius = async (e) => {
+        const response = await putDistanceRadius(e)
+        setProfile(response)
+    }
 
-    const updateDistanceRadius = (e) => {
-        console.log("updateDistanceRadius: ", e)
+    const getProfile = async () => {
+        const response = await getUser()
+        setProfile(response)
+        setLoad(true)
     }
 
     useEffect(() => {
@@ -33,6 +35,10 @@ const Profile = () => {
         }
     }, [profile])
 
+    useEffect(() => {
+        getProfile()
+    }, [])
+
     return (
         <Screen
             style={{
@@ -40,57 +46,56 @@ const Profile = () => {
                 justifyContent: 'center',
             }}
         >
+            {load && (
+                <View style={{
+                    width: '100%',
+                    height: '100%',
+                    justifyContent: 'flex-start',
+                    alignItems: 'centert',
 
-            <View style={{
-                width: '100%',
-                height: '100%',
-                justifyContent: 'flex-start',
-                alignItems: 'centert',
+                }}>
+                    <BackButton 
+                        accessibilityHint="Pressione para voltar"
+                        onPress={() => {
+                            router.back()
+                        }}
+                    />
 
-            }}>
-                <BackButton 
-                    accessibilityHint="Pressione para voltar"
-                    onPress={() => {
-                        router.back()
-                    }}
-                />
+                    <View style={{marginTop: '30%'}}>
+                        <View style={styled.profile_view}>
+                            <Image src={profile.photo} style={{ width: 141, height: 141, margin: 'auto', borderRadius: 100}}/>
+                            <Image source={medal} style={styled.medal} />
+                            <Text style={styled.level}>{profile.level}</Text>
+                        </View>
 
-                <View style={{marginTop: '30%'}}>
-                    <View style={styled.profile_view}>
-                        <Image src={profile.photo} style={{ width: 141, height: 141, margin: 'auto', borderRadius: 100}}/>
-                        <Image source={medal} style={styled.medal} />
-                        <Text style={styled.level}>{profile.level}</Text>
-                    </View>
+                        <View style={{
+                            alignItems: 'center',
+                            marginTop: 16
+                        }}>
+                            <Text style={styled.name}>{profile.name}</Text>
+                            <Text style={styled.username}>{profile.username}</Text>
+                        </View>
 
-                    <View style={{
-                        alignItems: 'center',
-                        marginTop: 16
-                    }}>
-                        <Text style={styled.name}>{profile.name}</Text>
-                        <Text style={styled.username}>{profile.username}</Text>
-                    </View>
-
-                    <View style={{
-                        width: '100%',
-                        marginTop: 32
-                    }}>
-                        <Text>Buscar mercados no raio</Text>
-                        <Range 
-                            min={2}
-                            max={35}
-                            initial={profile.distance_radius}
-                            unidade={'Km'}
-                            onChange={(e) => updateDistanceRadius(e)}
-                            marginVertical={'0'}
-                            width={'100%'}
-                        />
+                        <View style={{
+                            width: '100%',
+                            marginTop: 32
+                        }}>
+                            <Text>Buscar mercados no raio</Text>
+                            <Range 
+                                min={2}
+                                max={35}
+                                initial={profile.distance_radius}
+                                unidade={'Km'}
+                                onChange={(e) => updateDistanceRadius(e)}
+                                marginVertical={'0'}
+                                width={'100%'}
+                            />
+                        </View>
                     </View>
                 </View>
-            </View>
+            )}
         </Screen>
     )
-
-
 }
 
 const styled = StyleSheet.create({
