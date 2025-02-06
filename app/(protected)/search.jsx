@@ -14,95 +14,15 @@ import Card from '../../components/Card.jsx'
 import Badge from '../../components/Badge.jsx'
 import ProgressBar from '../../components/ProgressBar.jsx'
 import { format } from 'date-fns';
+import { searchProduct } from '../../services/mock/products/product.js'
 
 
 const Search = () => {
     const [search, setSearch] = useState("")
     const [openFilter, setOpenFilter] = useState(false)
     const [filtroOrdem, setFiltroOrdem] = useState(false)
-    const [items] = useState([
-        {
-          image: "https://example.com/images/arroz.jpg",
-          market: "Supermercado ABC",
-          product: "Arroz 5kg",
-          confidence: 95,
-          price: 23.99,
-          updatedAt: "2025-01-25"
-        },
-        {
-          image: "https://example.com/images/feijao.jpg",
-          market: "Mercado XYZ",
-          product: "Feijão Carioca 1kg",
-          confidence: 30,
-          price: 8.49,
-          updatedAt: "2025-01-24"
-        },
-        {
-          image: "https://example.com/images/leite.jpg",
-          market: "Hipermercado Delta",
-          product: "Leite Integral 1L",
-          confidence: 65,
-          price: 4.99,
-          updatedAt: "2025-01-23"
-        },
-        {
-          image: "https://example.com/images/oleo.jpg",
-          market: "Supermercado ABC",
-          product: "Óleo de Soja 900ml",
-          confidence: 100,
-          price: 7.29,
-          updatedAt: "2025-01-22"
-        },
-        {
-          image: "https://example.com/images/acucar.jpg",
-          market: "Mercado da Esquina",
-          product: "Açúcar Refinado 1kg",
-          confidence: 57,
-          price: 3.89,
-          updatedAt: "2025-01-24"
-        },
-        {
-          image: "https://example.com/images/cafe.jpg",
-          market: "Mercado XYZ",
-          product: "Café em Pó 500g",
-          confidence: 96,
-          price: 12.49,
-          updatedAt: "2025-01-26"
-        },
-        {
-          image: "https://example.com/images/macarrao.jpg",
-          market: "Hipermercado Delta",
-          product: "Macarrão Espaguete 500g",
-          confidence: 10,
-          price: 4.49,
-          updatedAt: "2025-01-24"
-        },
-        {
-          image: "https://example.com/images/detergente.jpg",
-          market: "Supermercado ABC",
-          product: "Detergente Líquido 500ml",
-          confidence: 2,
-          price: 2.39,
-          updatedAt: "2025-01-25"
-        },
-        {
-          image: "https://example.com/images/sabonete.jpg",
-          market: "Mercado da Esquina",
-          product: "Sabonete Neutro 90g",
-          confidence: 20,
-          price: 1.79,
-          updatedAt: "2025-01-23"
-        },
-        {
-          image: "https://example.com/images/frango.jpg",
-          market: "Hipermercado Delta",
-          product: "Peito de Frango Resfriado 1kg",
-          confidence: 71,
-          price: 14.99,
-          updatedAt: "2025-01-26"
-        }
-    ])
-    const [pesquisa, setPesquisa] = useState(false)
+    const [filtroCategoria, setFiltroCategoria] = useState('')
+    const [items, setItems] = useState([])
 
     const styled = StyleSheet.create({
         price: {
@@ -122,6 +42,23 @@ const Search = () => {
         })
     };
 
+    const pesquisar = async () => {
+        setOpenFilter(false)
+
+        if (search) {
+            const filtro = {
+                texto: search,
+                ordem: filtroOrdem,
+                categoria: filtroCategoria
+            }
+
+            const response = await searchProduct(filtro)
+            setItems(response)
+        } else {
+            setItems([])
+        }
+    }
+
     return (
         <Screen scroll>
             <View style={{
@@ -129,6 +66,7 @@ const Search = () => {
                 marginVertical: 'auto',
                 alignItems: 'center',
                 justifyContent: 'center',
+                paddingBottom: 88,
             }}> 
                 <View style={{
                     width: '100%',
@@ -144,13 +82,13 @@ const Search = () => {
                     <View style={{width: '80%'}}>
                         <Input 
                             type="text"
-                            label="Texto qualquer"
+                            label="Pesquisar produto"
                             required={false}
                             error={false}
                             value={search}
                             onChangeText={(e) => setSearch(e)}
                             hidePlaceholder
-                            onBlur={() => setPesquisa(search ? true : false)}
+                            onBlur={() => pesquisar()}
                         />
                     </View>
 
@@ -167,7 +105,7 @@ const Search = () => {
                 </View>
 
 
-                {pesquisa && items.length > 0 ? (
+                {items.length > 0 ? (
                     <View style={{
                         marginTop: 16,
                         flexDirection: 'row',
@@ -209,7 +147,6 @@ const Search = () => {
                                 />
                             </Card>
                         ))}
-
 
                     </View>
                 ) : (
@@ -289,6 +226,15 @@ const Search = () => {
                         { value: 19, label: "Papelaria" },
                         { value: 20, label: "Eletroportáteis" }
                    ]}
+                   onValueChange={(e) => setFiltroCategoria(e)}
+                />
+
+                <Button 
+                    width={'100%'}
+                    backgroundColor={colors.turquoise}
+                    text="Filtrar"
+                    accessibilityHint="Pressione para filtrar por última atualização!"
+                    onPress={() => pesquisar()}
                 />
                 
             </AnimatedModal>
