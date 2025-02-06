@@ -2,6 +2,7 @@ import React, { useEffect } from "react"
 import { Tabs, useRouter, useSegments } from "expo-router"
 
 import { AuthProvider, useAuth } from "../contexts/authContext"
+import { ListProvider } from "@/contexts/listContext"
 
 const TabsLayout = () => {
     const { authState } = useAuth();
@@ -45,7 +46,9 @@ const TabsLayout = () => {
 export default function RootLayout() {
     return (
         <AuthProvider>
-            <TabsLayout />
+            <ListProvider>
+                <TabsLayout />
+            </ListProvider>
         </AuthProvider>
     )
 }

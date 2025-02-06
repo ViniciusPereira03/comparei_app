@@ -10,8 +10,10 @@ import ImageCreateList from '../../assets/images/createList/image_createList.js'
 import ShortButton from '../../components/ShortButton.jsx'
 import { postList } from '../../services/mock/lists/list.js'
 import { useFocusEffect } from '@react-navigation/native'
+import { useList } from '../../contexts/listContext'
 
 const CreateList = () => {
+    const {listState} = useList();
     const item = useLocalSearchParams();
     const [nomeLista, setNomeLista] = useState("");
 
@@ -40,6 +42,17 @@ const CreateList = () => {
                 id: response.id
             }
         })
+    }
+
+    const verificaListaAberta = () => {
+        if (listState.id) {
+            router.replace({
+                pathname: '/list',
+                params: {
+                    id: listState.id
+                }
+            })
+        }
     }
     
     useFocusEffect(

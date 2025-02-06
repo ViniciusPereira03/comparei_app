@@ -11,9 +11,11 @@ import { router } from 'expo-router'
 import { getLists } from '../../services/mock/lists/list.js'
 import Badge from '../../components/Badge.jsx'
 import { useFocusEffect } from '@react-navigation/native'
+import { useList } from '../../contexts/listContext'
 
 const Home = () => {
     const { onLogout } = useAuth();
+    const { onOpen } = useList();
 
     const [lists, setLists] = useState([])
     const [modalVisible, setModalVisible] = useState(false);
@@ -22,8 +24,18 @@ const Home = () => {
     const getLIsts = async () => {
         try {
             const response = await getLists()
-            console.log(response)
-            setLists(response)
+
+            if (response.length > 0) {
+                for (const l of response) {
+                    if (l.status) {
+                        onOpen(l.id, l.title, l.created);
+                        break;
+                    }
+                }
+    
+                setLists(response)
+            }
+
         } catch (error) {
             
         }
