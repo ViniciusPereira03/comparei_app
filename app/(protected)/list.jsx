@@ -1,5 +1,5 @@
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import Screen from '../../components/Screen.jsx'
 import { router, useLocalSearchParams } from 'expo-router'
 import { colors } from '../../assets/colors/global.jsx'
@@ -10,6 +10,7 @@ import Badge from '../../components/Badge.jsx'
 import ProgressBar from '../../components/ProgressBar.jsx'
 import { format } from 'date-fns';
 import { getListProducts } from '../../services/mock/lists/list.js'
+import { useFocusEffect } from '@react-navigation/native'
 
 
 const List = () => {
@@ -36,11 +37,23 @@ const List = () => {
         }
     }
 
-    useEffect(() => {
-        loadList();
+    // useEffect(() => {
+    //     loadList();
 
-        return () => {}
-    }, [])
+    //     return () => {}
+    // }, [])
+
+
+    useFocusEffect(
+        useCallback(() => {
+            loadList();
+
+            return () => {
+            setItems([])
+            params.id = false;
+            }
+        }, [params.id])
+    );
 
     const styled = StyleSheet.create({
         title: {

@@ -1,5 +1,5 @@
 import { Text, View } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import Screen from '../../components/Screen'
 import Button from '../../components/Button'
 import { colors } from '../../assets/colors/global'
@@ -10,6 +10,7 @@ import { useAuth } from '../../contexts/authContext'
 import { router } from 'expo-router'
 import { getLists } from '../../services/mock/lists/list.js'
 import Badge from '../../components/Badge.jsx'
+import { useFocusEffect } from '@react-navigation/native'
 
 const Home = () => {
     const { onLogout } = useAuth();
@@ -28,9 +29,15 @@ const Home = () => {
         }
     }
 
-    useEffect(() => {
-        getLIsts()
-    }, [])
+    useFocusEffect(
+        useCallback(() => {
+            getLIsts()
+            
+            return () => {
+                setLists([])
+            }
+        }, [])
+    );
 
 
     return (

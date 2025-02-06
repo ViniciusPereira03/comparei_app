@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import Screen from '../../components/Screen'
 import { router, useLocalSearchParams } from 'expo-router'
 import Input from '../../components/Input.jsx'
@@ -9,7 +9,7 @@ import BackButton from '../../components/BackButton.jsx'
 import ImageCreateList from '../../assets/images/createList/image_createList.js'
 import ShortButton from '../../components/ShortButton.jsx'
 import { postList } from '../../services/mock/lists/list.js'
-
+import { useFocusEffect } from '@react-navigation/native'
 
 const CreateList = () => {
     const item = useLocalSearchParams();
@@ -42,12 +42,16 @@ const CreateList = () => {
         })
     }
     
-    useEffect(() => {
-        
-        return () => {
-            setNomeLista("");
-        }
-    }, [])
+    useFocusEffect(
+        useCallback(() => {
+
+            verificaListaAberta()
+
+            return () => {
+                setNomeLista("");
+            }
+        }, [])
+    );
 
     return (
         <Screen>
