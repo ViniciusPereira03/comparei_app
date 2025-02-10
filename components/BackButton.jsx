@@ -20,7 +20,7 @@ const BackButton = (props) => {
             accessibilityHint={props.accessibilityHint}
             {...props}
         >
-            <Ionicons name="chevron-back-outline" size={24} color={colors.hookers_green} />
+            <Ionicons name="chevron-back-outline" size={24} color={props.color ? props.color : colors.hookers_green} />
         </TouchableOpacity>
     )
 }

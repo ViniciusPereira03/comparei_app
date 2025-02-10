@@ -4,6 +4,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { colors } from '../../assets/colors/global';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { router } from 'expo-router';
+import BackButton from '../../components/BackButton';
 
 const CameraSearch = () => {
     let cameraRef = useRef();
@@ -12,9 +13,6 @@ const CameraSearch = () => {
     const [barcodeMode, setBarcodeMode] = useState(false)
     const [barcodeValue, setBarcodeValue] = useState('');
 
-        
-
-    
     useEffect(() => {
         if (permission) {
             if (!permission.granted) {
@@ -52,12 +50,18 @@ const CameraSearch = () => {
         }
     }, [barcodeValue])
 
-
     return (
         <>
+            <View style={styles.header}>
+                <BackButton 
+                    accessibilityHint="Pressione para voltar"
+                    onPress={() => router.back()}
+                    color={colors.white}
+                />
+            </View>
+
             {barcodeMode ? (
                 <View style={styles.container}>
-
                     <CameraView
                         ref={cameraRef}
                         style={styles.camera}
@@ -195,6 +199,13 @@ const styles = StyleSheet.create({
         position: 'absolute',
         backgroundColor: colors.scarlet,
         left: '49.5%'
+    },
+    header: {
+        position: 'absolute',
+        marginTop: 48,
+        left: 16,
+        zIndex: 10,
+        backgroundColor: 'transparent'
     }
 });
 
