@@ -1,16 +1,19 @@
 import { StyleSheet, Text, View } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import Screen from '../../components/Screen'
 import Button from '../../components/Button'
-import { router } from 'expo-router'
+import { router, useLocalSearchParams } from 'expo-router'
 import { colors } from '../../assets/colors/global'
 import Input from '../../components/Input'
 import BackButton from '../../components/BackButton'
 import { useAuth } from '../../contexts/authContext'
 import * as Location from 'expo-location';
+import { useFocusEffect } from '@react-navigation/native'
+import { getProductById, updateProduct } from '../../services/mock/products/product'
 
 const EditProduct = () => {
     const { authState } = useAuth();
+    const params = useLocalSearchParams();
     const [location, setLocation] = useState(null);
     const [nomeProduto, setNomeProduto] = useState("");
     const [marcaProduto, setMarcaProduto] = useState("");
@@ -25,38 +28,75 @@ const EditProduct = () => {
         }
     })
 
-    const salvar = () => {
+    const salvar = async () => {
         console.log("salvar produto")
 
         const produto = {
-            nomeProduto,
-            marcaProduto,
-            quantidade,
-            unidade,
-            preco,
+            product_id: params.product_id,
+            market_id: params.market_id,
+            product: nomeProduto,
+            brand: marcaProduto,
+            amount: parseInt(quantidade),
+            unity: unidade,
+            price: parseFloat(`${preco}`.replace(',', '.')).toFixed(2),
             location,
             authState
         }
-
         console.log(produto)
-        router.replace('/search')
+
+        const update = await updateProduct(produto)
+        console.log("update: ", update)
+
+        router.replace('/home')
     }
-    
-    useEffect(() => {
-        async function getCurrentLocation() {
+    async function getCurrentLocation() {
           
-          let { status } = await Location.requestForegroundPermissionsAsync();
-          if (status !== 'granted') {
-            alert('Permission to access location was denied');
-            return;
-          }
-    
-          let location = await Location.getCurrentPositionAsync({});
-          setLocation(location);
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+        alert('Permission to access location was denied');
+        return;
         }
-    
-        getCurrentLocation();
-    }, []);
+
+        let location = await Location.getCurrentPositionAsync({});
+        setLocation(location);
+    }
+
+    const loadProduct = async (params) => {
+        if (params.product_id && params.market_id) {
+            console.log("params.product_id: ", params.product_id)
+            console.log("params.market_id: ", params.market_id)
+
+            const product = await getProductById({
+                product_id: params.product_id,
+                market_id: params.market_id
+            })
+
+            setNomeProduto(product.product);
+            setMarcaProduto(product.brand);
+            setQuantidade(`${product.amount}`);
+            setUnidade(product.unity);
+            setPreco(`${product.price}`)
+        }
+    }
+
+
+
+
+    useFocusEffect(
+        useCallback(() => {
+            loadProduct(params);
+            getCurrentLocation();
+
+            return () => {
+                setLocation(null)
+                setNomeProduto("");
+                setMarcaProduto("");
+                setQuantidade("");
+                setUnidade("");
+                setPreco("");
+            }
+        }, [params.product_id])
+    );
 
     return (
         <Screen>

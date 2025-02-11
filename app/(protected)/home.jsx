@@ -1,4 +1,4 @@
-import { Text, View } from 'react-native'
+import { Text, TouchableOpacity, View } from 'react-native'
 import React, { useCallback, useState } from 'react'
 import Screen from '../../components/Screen'
 import Button from '../../components/Button'
@@ -35,10 +35,16 @@ const Home = () => {
     
                 setLists(response)
             }
-
         } catch (error) {
             
         }
+    }
+
+    const openList = (id) => {
+        router.push({
+            pathname: '/list',
+            params: { id }
+        })
     }
 
     useFocusEffect(
@@ -82,24 +88,26 @@ const Home = () => {
                     <View style={{width: '100%', paddingBottom: 100}}>
                         {lists.map((l, i) => (
                             <Card key={i}>
-                                <View
-                                    style={{
-                                        width: '100%',
-                                        flexDirection: 'row',
-                                        alignItems: 'flex-start',
-                                        justifyContent: 'space-between',
-                                    }}
-                                >
-                                    <Text style={{fontSize: 18, fontWeight: 'bold', paddingBottom: 16}}>{l.title}</Text>
+                                <TouchableOpacity onPress={() => openList(l.id)}>
+                                    <View
+                                        style={{
+                                            width: '100%',
+                                            flexDirection: 'row',
+                                            alignItems: 'flex-start',
+                                            justifyContent: 'space-between',
+                                        }}
+                                    >
+                                        <Text style={{fontSize: 18, fontWeight: 'bold', paddingBottom: 16}}>{l.title}</Text>
 
-                                    <Badge 
-                                        width
-                                        text={l.status ? `Em andamento` : `Finalizada`}
-                                        backgroundColor={l.status ? colors.hookers_green : colors.scarlet}
-                                        outline
-                                    />
-                                </View>
-                                <Text>Criada em: {l.created}</Text>
+                                        <Badge 
+                                            width
+                                            text={l.status ? `Em andamento` : `Finalizada`}
+                                            backgroundColor={l.status ? colors.hookers_green : colors.scarlet}
+                                            outline
+                                        />
+                                    </View>
+                                    <Text>Criada em: {l.created}</Text>
+                                </TouchableOpacity>
                             </Card>
                         ))}
 
