@@ -1,11 +1,12 @@
-import { Image, StyleSheet, Text, View } from 'react-native'
+import { Image, StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native'
 import React, { useEffect, useState } from 'react'
+import * as ImagePicker from 'expo-image-picker'
 import Screen from '../../components/Screen'
 import Range from '../../components/Range'
 import { colors } from '../../assets/colors/global'
 import BackButton from '../../components/BackButton'
 import { router } from 'expo-router'
-import { getUser, putDistanceRadius } from '../../services/mock/users/user'
+import { getUser, putDistanceRadius, uploadProfilePhoto } from '../../services/mock/users/user' // Adicione uploadProfilePhoto
 
 const Profile = () => {
     const [profile, setProfile] = useState()
@@ -39,47 +40,93 @@ const Profile = () => {
         getProfile()
     }, [])
 
+    const handleImagePicker = async () => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
+        if (status !== 'granted') {
+            Alert.alert('Permissão necessária', 'Precisamos de acesso à sua galeria para mudar a foto.')
+            return
+        }
+
+        const options = ['Tirar Foto', 'Escolher da Galeria', 'Cancelar']
+        Alert.alert('Alterar Foto', 'Escolha uma opção', [
+            { text: options[0], onPress: () => pickImage(true) },
+            { text: options[1], onPress: () => pickImage(false) },
+            { text: options[2], style: 'cancel' }
+        ])
+    }
+
+    const pickImage = async (camera) => {
+        let result
+        if (camera) {
+            result = await ImagePicker.launchCameraAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 1,
+            })
+        } else {
+            result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 1,
+            })
+        }
+
+        if (!result.canceled) {
+            uploadImage(result.assets[0].uri)
+        }
+    }
+
+    const uploadImage = async (imageUri) => {
+        const formData = new FormData()
+        formData.append('file', {
+            uri: imageUri,
+            name: 'profile.jpg',
+            type: 'image/jpeg',
+        })
+
+        try {
+            const response = await uploadProfilePhoto(formData)
+            // if (response.success) {
+                setProfile((prev) => ({ ...prev, photo: response.photoUrl }))
+            // } else {
+            //     Alert.alert('Erro', 'Falha ao enviar a foto. Tente novamente.')
+            // }
+        } catch (error) {
+            console.error(error)
+            Alert.alert('Erro', 'Ocorreu um erro ao enviar a foto.')
+        }
+    }
+
     return (
-        <Screen
-            style={{
-                alignItems: 'center',
-                justifyContent: 'center',
-            }}
-        >
+        <Screen style={{ alignItems: 'center', justifyContent: 'center' }}>
             {load && (
                 <View style={{
                     width: '100%',
                     height: '100%',
                     justifyContent: 'flex-start',
-                    alignItems: 'centert',
-
                 }}>
                     <BackButton 
                         accessibilityHint="Pressione para voltar"
-                        onPress={() => {
-                            router.back()
-                        }}
+                        onPress={() => router.back()}
                     />
 
-                    <View style={{marginTop: '30%'}}>
+                    <View style={{ marginTop: '30%' }}>
                         <View style={styled.profile_view}>
-                            <Image src={profile.photo} style={{ width: 141, height: 141, margin: 'auto', borderRadius: 100}}/>
+                            <TouchableOpacity onPress={handleImagePicker}>
+                                <Image src={profile.photo} style={styled.profileImage} />
+                            </TouchableOpacity>
                             <Image source={medal} style={styled.medal} />
                             <Text style={styled.level}>{profile.level}</Text>
                         </View>
 
-                        <View style={{
-                            alignItems: 'center',
-                            marginTop: 16
-                        }}>
+                        <View style={{ alignItems: 'center', marginTop: 16 }}>
                             <Text style={styled.name}>{profile.name}</Text>
                             <Text style={styled.username}>{profile.username}</Text>
                         </View>
 
-                        <View style={{
-                            width: '100%',
-                            marginTop: 32
-                        }}>
+                        <View style={{ width: '100%', marginTop: 32 }}>
                             <Text>Buscar mercados no raio</Text>
                             <Range 
                                 min={2}
@@ -110,17 +157,25 @@ const styled = StyleSheet.create({
         color: colors.battleship_gray
     },
     profile_view: {
-
+        alignItems: 'center',
+    },
+    profileImage: {
+        width: 141,
+        height: 141,
+        margin: 'auto',
+        borderRadius: 100,
     },
     medal: {
         position: 'absolute',
-        marginLeft: '55%',
+        left: '55%',
         width: 48,
         height: 48
     },
     level: {
+        width: 32,
+        height: 32,
         backgroundColor: colors.turquoise,
-        padding: 8,
+        padding: 4,
         margin: 'auto',
         marginTop: -16,
         textAlign: 'center',
