@@ -78,7 +78,7 @@ const CameraSearch = () => {
         
             case 404:
                 router.replace({ pathname: '/createProduct', params: {
-                    product: response.product_info
+                    product: JSON.stringify(response.product_info)
                 } })
                 break;
         
