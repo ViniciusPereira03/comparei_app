@@ -1,12 +1,15 @@
-import { StyleSheet, View, TouchableOpacity } from 'react-native'
+import { StyleSheet, View, TouchableOpacity, Alert } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { colors } from '../../assets/colors/global';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { router } from 'expo-router';
 import BackButton from '../../components/BackButton';
+import { validaImage } from '../../services/mock/products/product';
+import { useList } from '../../contexts/listContext';
 
 const CameraSearch = () => {
+    const {listState} = useList();
     let cameraRef = useRef();
     const [permission, requestPermission] = useCameraPermissions();
     const [photo, setPhoto] = useState('');
@@ -25,14 +28,63 @@ const CameraSearch = () => {
     const takePic = async () => {
         let options = {
             quality: 1,
-            base64: true,
+            base64: false,
             exif: false
         }
 
         let newPhoto = await cameraRef.current.takePictureAsync(options);
         setPhoto(newPhoto)
 
-        console.log(newPhoto)
+        const formData = new FormData()
+        formData.append('file', {
+            uri: newPhoto.uri,
+            name: 'product_image.jpg',
+            type: 'image/jpeg',
+        })
+
+        const response = await validaImage(formData)
+
+        switch (response.code) {
+            case 200:
+                Alert.alert('Sucesso', 'Produto Atualizado!')
+
+                if (listState.id) {
+                    router.replace({
+                        pathname: '/list',
+                        params: {
+                            id: listState.id
+                        }
+                    })
+                } else {
+                    router.replace({ pathname: '/search' })
+                }
+                        
+                break;
+        
+            case 302:
+                Alert.alert('Sucesso', 'Valor do produto confirmado!')
+
+                if (listState.id) {
+                    router.replace({
+                        pathname: '/list',
+                        params: {
+                            id: listState.id
+                        }
+                    })
+                } else {
+                    router.replace({ pathname: '/search' })
+                }
+                break;
+        
+            case 404:
+                router.replace({ pathname: '/createProduct', params: {
+                    product: response.product_info
+                } })
+                break;
+        
+            default:
+                break;
+        }
     }
 
     const scanner = (e) => {

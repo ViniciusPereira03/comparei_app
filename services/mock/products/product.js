@@ -131,10 +131,6 @@ export const getProductById = async (payload) => {
 
 
 export const updateProduct = async (payload) => {
-  console.log("updateProduct");
-  console.log("PRODUTO_ID: ", payload.product_id);
-  console.log("MERCADO_ID: ", payload.market_id)
-
   return {
     image: "https://io.convertiez.com.br/m/superpaguemenos/shop/products/images/17846/small/arroz-prato-fino-tipo-1-5kg_58932.jpg",
     market_id: 321,
@@ -144,5 +140,35 @@ export const updateProduct = async (payload) => {
     amount: payload.amount,
     unity: payload.unity,
     price: payload.price,
+  }
+}
+
+export const validaImage = async (payload) => {
+  // A função deve primeiro verificar se o produto está cadastrado.
+  //   - Se sim: Verificar se o produto está vinculado ao mercado (via coordenadas) 
+  //      - Se sim: verificar se as informações de preço estão corretas e atualizadas
+  //         - Se não (200): atualizar o valor do produto (Exibir mensagem de Produto Atualizado!)
+  //         - Se sim (302): Exibir mensagem (Valor do produto confirmado!)
+  //
+  //      - Se não (404): Redirecionar usuário para tela de cadastro com informações do produto coletadas da imagem
+  //                      Necessário que a API retorne o JSON com as informações do produto
+  //                      Ao finalizar o cadastro, o usuário precisa ler o código de barras do produto 
+  //
+  //   - Se não (404): Redirecionar usuário para tela de cadastro com informações do produto coletadas da imagem
+  //                   Necessário que a API retorne o JSON com as informações do produto
+  //                   Ao finalizar o cadastro, o usuário precisa ler o código de barras do produto 
+
+  console.log("validaImage")
+  const fileData = payload._parts[0][1]
+  return {
+    code: 404,
+    fileData,
+    product_info: {
+      product: "Arroz",
+      brand: "Camil",
+      amount: 1,
+      unity: 'Kg',
+      price: 23.99,
+    }
   }
 }
