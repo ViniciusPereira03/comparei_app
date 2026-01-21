@@ -1,5 +1,5 @@
-import { Text, View } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import { Text, TouchableOpacity, View } from 'react-native'
+import React, { useCallback, useState } from 'react'
 import Screen from '../../components/Screen'
 import Button from '../../components/Button'
 import { colors } from '../../assets/colors/global'
@@ -8,20 +8,55 @@ import Card from '../../components/Card'
 import ImageHome from '../../assets/images/home/image_home.js'
 import { useAuth } from '../../contexts/authContext'
 import { router } from 'expo-router'
+import { getLists } from '../../services/mock/lists/list.js'
+import Badge from '../../components/Badge.jsx'
+import { useFocusEffect } from '@react-navigation/native'
+import { useList } from '../../contexts/listContext'
 
 const Home = () => {
     const { onLogout } = useAuth();
+    const { onOpen } = useList();
 
     const [lists, setLists] = useState([])
     const [modalVisible, setModalVisible] = useState(false);
 
-    useEffect(() => {
-        console.log("HOME AQUI")
-    }, [])
 
-    useEffect(() => {
-        console.log("lists: ", lists)
-    }, [lists])
+    const getLIsts = async () => {
+        try {
+            const response = await getLists()
+
+            if (response.length > 0) {
+                for (const l of response) {
+                    if (l.status) {
+                        onOpen(l.id, l.title, l.created);
+                        break;
+                    }
+                }
+    
+                setLists(response)
+            }
+        } catch (error) {
+            
+        }
+    }
+
+    const openList = (id) => {
+        router.push({
+            pathname: '/list',
+            params: { id }
+        })
+    }
+
+    useFocusEffect(
+        useCallback(() => {
+            getLIsts()
+            
+            return () => {
+                setLists([])
+            }
+        }, [])
+    );
+
 
     return (
         <Screen scroll>
@@ -31,12 +66,48 @@ const Home = () => {
                 alignItems: 'center',
                 justifyContent: 'center',
             }}>
+
+                <View style={{
+                    width: '100%',
+                    paddingBottom: 16
+                }}>
+                    <Button 
+                        width='100%'
+                        backgroundColor={colors.turquoise}
+                        text="Criar lista"
+                        accessibilityHint="Pressione para criar uma lista!"
+                        type="add"
+                        onPress={() => router.replace({
+                            pathname: '/createList',
+                            params: {}
+                        })}
+                    />
+                </View>
+
                 {lists.length > 0 ? (
                     <View style={{width: '100%', paddingBottom: 100}}>
                         {lists.map((l, i) => (
                             <Card key={i}>
-                                <Text>Lista {i}</Text>
-                                <Text>Texto da lista: {l.value}</Text>
+                                <TouchableOpacity onPress={() => openList(l.id)}>
+                                    <View
+                                        style={{
+                                            width: '100%',
+                                            flexDirection: 'row',
+                                            alignItems: 'flex-start',
+                                            justifyContent: 'space-between',
+                                        }}
+                                    >
+                                        <Text style={{fontSize: 18, fontWeight: 'bold', paddingBottom: 16}}>{l.title}</Text>
+
+                                        <Badge 
+                                            width
+                                            text={l.status ? `Em andamento` : `Finalizada`}
+                                            backgroundColor={l.status ? colors.hookers_green : colors.scarlet}
+                                            outline
+                                        />
+                                    </View>
+                                    <Text>Criada em: {l.created}</Text>
+                                </TouchableOpacity>
                             </Card>
                         ))}
 
@@ -68,7 +139,7 @@ const Home = () => {
                                 params: {}
                             })}
                         />
-                        <Button 
+                        {/* <Button 
                             width='auto'
                             backgroundColor={colors.turquoise}
                             text="c produto"
@@ -87,92 +158,10 @@ const Home = () => {
                                 pathname: '/editProduct',
                                 params: {}
                             })}
-                        />
+                        /> */}
                     </View>
                 )}
             </View>
-
-            
-
-            {/* <Input
-                type="password"
-                label="Senha"
-                value={text}
-                onChangeText={(e) => setText(e)}
-            />
-
-            <Input
-                type="email"
-                label="E-mail"
-                required
-                error={false}
-                value={text}
-                onChangeText={(e) => setText(e)}
-            />
-            
-            <Input
-                type="text"
-                label="Texto qualquer"
-                required={false}
-                error={false}
-                value={text}
-                onChangeText={(e) => setText(e)}
-            />
-            
-            <Input
-                type="numeric"
-                label="Numérico"
-                required={false}
-                error={false}
-                value={text}
-                onChangeText={(e) => setText(e)}
-            />
-
-            <Card>
-                <Select
-                    label="Select"
-                    // required={true}
-                    options={[
-                        { value: "1", label: "Opção 1" },
-                        { value: "2", label: "Opção 2" },
-                        { value: "3", label: "Opção 3" },
-                        { value: "4", label: "Opção 4" },
-                        { value: "5", label: "Opção 5" },
-                        { value: "6", label: "Opção 6" },
-                    ]}
-                    value={""}
-                    onValueChange={(newValue) => console.log(newValue)}
-                />
-
-                <Range 
-                    min={0} 
-                    max={50} 
-                    initial={25} 
-                    step={1} 
-                    onChange={(e) => console.log(e)}
-                    unidade=" Km"
-                />
-
-                <ProgressBar percentage={46} />
-            </Card> */}
-
-            
-
-            
-
-            <AnimatedModal visible={modalVisible} onClose={() => setModalVisible(false)}>
-                <Text style={{ fontSize: 18, textAlign: 'center', marginBottom: 10 }}>Ordenar por</Text>
-                <Text style={{ fontSize: 18, textAlign: 'center', marginBottom: 10 }}>Ordenar por</Text>
-
-                <Button 
-                    backgroundColor={colors.scarlet}
-                    text="fechar"
-                    accessibilityHint="Pressione para testar o botão!"
-                    type="error"
-                    onPress={() => setModalVisible(false)}
-                />
-                
-            </AnimatedModal>
         </Screen>
     )
 }

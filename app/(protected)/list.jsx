@@ -1,5 +1,5 @@
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import Screen from '../../components/Screen.jsx'
 import { router, useLocalSearchParams } from 'expo-router'
 import { colors } from '../../assets/colors/global.jsx'
@@ -9,46 +9,156 @@ import Card from '../../components/Card.jsx'
 import Badge from '../../components/Badge.jsx'
 import ProgressBar from '../../components/ProgressBar.jsx'
 import { format } from 'date-fns';
+import { getListProducts, removeItem } from '../../services/mock/lists/list.js'
+import { useFocusEffect } from '@react-navigation/native'
+import * as Location from 'expo-location';
+import { confirmProductValue } from '../../services/mock/products/product.js'
+
 
 
 const List = () => {
     const params = useLocalSearchParams();
+    const [location, setLocation] = useState(null);
+    const [showListType, setShowListType] = useState(1);
     const [items, setItems] = useState([]);
+    const [listId, setListId] = useState(0);
+    const [listName, setListName] = useState('')
 
-    const confirmarValor = () => {
-        console.log("Confirmar valor")
+    const confirmarValor = async (product) => {
+        await confirmProductValue({
+            ...product,
+            location
+        })
     }
 
-    const editarValor = () => {
-        console.log("Editar valor")
+    const editarValor = (payload) => {
+        router.push({
+            pathname: '/editProduct',
+            params: { 
+                product_id: payload.product_id,
+                market_id: payload.market_id
+            }
+        })
     }
 
-    const removerItemDaLista = () => {
-        console.log("Remover item da lista")
+    const removerItemDaLista = async (payload) => {
+        console.log("Remover item da lista: ", payload)
+        const newList = await removeItem(payload)
+        setItems(newList.products)
     }
 
-    const loadList = () => {
+    const loadList = async () => {
         console.log(params.id)
         if (params.id) {
-            setItems([
-                {
-                    "image": "https://example.com/images/arroz.jpg",
-                    "market": "Supermercado ABC",
-                    "product": "Arroz treste teste teste teste asyuagosydu teste 5kg",
-                    "confidence": 95,
-                    "price": 23.99,
-                    "updatedAt": "2025-01-25"
-                }
-            ])
+            const response = await getListProducts(params.id)
+            setListId(response.id)
+            setListName(response.name)
+            setItems(response.products)
         }
     }
 
-    useEffect(() => {
-        console.log("LOAD LIST")
-        loadList();
+    async function getCurrentLocation() {
+              
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+        alert('Permission to access location was denied');
+        return;
+        }
 
-        return () => {}
-    }, [])
+        let location = await Location.getCurrentPositionAsync({});
+        setLocation(location);
+    }
+
+    useFocusEffect(
+        useCallback(() => {
+            loadList();
+            getCurrentLocation();
+
+            return () => {
+                setItems([])
+                setLocation(null)
+                setShowListType(1);
+            }
+        }, [params.id])
+    );
+
+    const CardItem = ({ item, onEdit, onConfirm, onRemove }) => {
+        return (
+            <Card 
+                key={item.id} 
+                width="100%"
+                style={{
+                    justifyContent: 'flex-start',
+                    alignItems: 'flex-start',
+                }}
+            >
+                <View style={{
+                    flexDirection: 'row',
+                    justifyContent: 'flex-start',
+                    alignItems: 'flex-start'
+                }}>
+                    <Image source={{uri: item.image}} width={136} height={136}/>
+                    
+                    <View style={{
+                        width: "55%",
+                        alignItems: 'flex-start'
+                    }}>
+                        <Badge text={item.market} backgroundColor={colors.hookers_green}/>
+                        <Text>{item.product}</Text>
+                        <Text style={styled.price}>R$ {`${item.price}`.replace('.', ',')}</Text>
+                        <ProgressBar percentage={item.confidence}/>
+                        <Text style={styled.update}>Atualizado em: {format(new Date(item.updatedAt), "dd/MM/yyyy")}</Text>
+                    </View>
+                </View>
+                
+                {!item.confirmed && (
+                    <View style={{
+                        width: '100%',
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                    }}>
+                        <Button 
+                            type='edit'
+                            backgroundColor={colors.turquoise}
+                            width='45%'
+                            text='editar valor'
+                            onPress={() => onEdit({
+                                product_id: item.product_id,
+                                market_id: item.market_id
+                            })}
+                            marginTop={8}
+                        />
+
+                        <Button 
+                            type='success'
+                            backgroundColor={colors.turquoise}
+                            width='45%'
+                            text='confirmar valor'
+                            onPress={() => onConfirm({
+                                product_id: item.product_id,
+                                market_id: item.market_id,
+                                price: item.price
+                            })}
+                            marginTop={8}
+                        />
+                    </View>
+                )}
+
+                <Button 
+                    type='error'
+                    backgroundColor={colors.scarlet}
+                    width='100%'
+                    text='Remover da lista'
+                    onPress={() => onRemove({
+                        list_id: listId,
+                        product_id: item.product_id,
+                        market_id: item.market_id
+                    })}
+                    marginTop={8}
+                />
+            </Card>
+        )
+    }
 
     const styled = StyleSheet.create({
         title: {
@@ -70,6 +180,7 @@ const List = () => {
                 marginVertical: 'auto',
                 alignItems: 'center',
                 justifyContent: 'space-between',
+                paddingBottom: 88,
             }}> 
                 <View style={{
                     width: '100%',
@@ -82,73 +193,53 @@ const List = () => {
                         onPress={() => router.replace('/search')}
                     />
                     
-                    <Text style={styled.title}>Nome da lista aqui</Text>
+                    <Text style={styled.title}>{listName}</Text>
+                </View>
+
+                <View style={{
+                    width: '100%',
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: 8,
+                }}>
+                    <Button 
+                        backgroundColor={colors.turquoise}
+                        width='45%'
+                        text='pendentes'
+                        onPress={() => setShowListType(1)}
+                        marginTop={8}
+                        outline={showListType === 1 ? false : true}
+                    />
+
+                    <Button 
+                        backgroundColor={colors.turquoise}
+                        width='45%'
+                        text='confirmados'
+                        onPress={() => setShowListType(2)}
+                        marginTop={8}
+                        outline={showListType === 2 ? false : true}
+                    />
                 </View>
 
                 {items.map((i, index) => (
-                    <Card 
-                        key={index} 
-                        width="100%"
-                        style={{
-                            justifyContent: 'flex-start',
-                            alignItems: 'flex-start',
-                        }}
-                    >
-                        <View style={{
-                            flexDirection: 'row',
-                            justifyContent: 'flex-start',
-                            alignItems: 'flex-start'
-                        }}>
-                            <Image source={{uri: "https://io.convertiez.com.br/m/superpaguemenos/shop/products/images/17846/small/arroz-prato-fino-tipo-1-5kg_58932.jpg"}} width={136} height={136}/>
-                            
-                            <View style={{
-                                width: "55%",
-                                alignItems: 'flex-start',
-
-                            }}>
-                                <Badge text={i.market} backgroundColor={colors.hookers_green}/>
-                                <Text>{i.product}</Text>
-                                <Text style={styled.price}>R$ {i.price}</Text>
-                                <ProgressBar percentage={i.confidence}/>
-                                <Text style={styled.update}>Atualizado em: {format(new Date(i.updatedAt), "dd/MM/yyyy")}</Text>
-                            </View>
-                        </View>
-
-                        
-                        <View style={{
-                            width: '100%',
-                            flexDirection: 'row',
-                            justifyContent: 'space-between',
-                        }}>
-                            <Button 
-                                type='success'
-                                backgroundColor={colors.turquoise}
-                                width='45%'
-                                text='confirmar valor'
-                                onPress={() => confirmarValor()}
-                                marginTop={8}
-                            />
-                            
-                            <Button 
-                                type='edit'
-                                backgroundColor={colors.turquoise}
-                                width='45%'
-                                text='editar valor'
-                                onPress={() => editarValor()}
-                                marginTop={8}
-                            />
-                        </View>
-
-                        <Button 
-                            type='error'
-                            backgroundColor={colors.scarlet}
-                            width='100%'
-                            text='Remover da lista'
-                            onPress={() => removerItemDaLista()}
-                            marginTop={8}
+                    showListType === 1 && !i.confirmed ? (
+                        <CardItem 
+                            key={index}
+                            item={i}
+                            onEdit={(data) => editarValor(data)}
+                            onConfirm={(data) => confirmarValor(data)}
+                            onRemove={(data) => removerItemDaLista(data)}
                         />
-
-                    </Card>
+                    ) : showListType === 2 && i.confirmed ? (
+                        <CardItem 
+                            key={index}
+                            item={i}
+                            onEdit={(data) => editarValor(data)}
+                            onConfirm={(data) => confirmarValor(data)}
+                            onRemove={(data) => removerItemDaLista(data)}
+                        />
+                    ) : null
                 ))}
                 
             </View>

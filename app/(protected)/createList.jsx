@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import Screen from '../../components/Screen'
 import { router, useLocalSearchParams } from 'expo-router'
 import Input from '../../components/Input.jsx'
@@ -8,9 +8,12 @@ import BackButton from '../../components/BackButton.jsx'
 
 import ImageCreateList from '../../assets/images/createList/image_createList.js'
 import ShortButton from '../../components/ShortButton.jsx'
-
+import { postList } from '../../services/mock/lists/list.js'
+import { useFocusEffect } from '@react-navigation/native'
+import { useList } from '../../contexts/listContext'
 
 const CreateList = () => {
+    const {listState} = useList();
     const item = useLocalSearchParams();
     const [nomeLista, setNomeLista] = useState("");
 
@@ -27,30 +30,41 @@ const CreateList = () => {
         }
     })
 
-    const criarLista = () => {
-        console.log("ITEM: ", item)
-        console.log("Criar lista de compras: ", nomeLista);
+    const criarLista = async () => {
+        const response = await postList({
+            title: nomeLista,
+            ...item
+        })
 
-        console.log(item.product)
+        router.replace({
+            pathname: '/list',
+            params: {
+                id: response.id
+            }
+        })
+    }
 
-        if (item.product) {
+    const verificaListaAberta = () => {
+        if (listState.id) {
             router.replace({
                 pathname: '/list',
                 params: {
-                    id: 123
+                    id: listState.id
                 }
             })
-        } else {
-            router.replace('/list')
         }
     }
     
-    useEffect(() => {
-        
-        return () => {
-            setNomeLista("");
-        }
-    }, [])
+    useFocusEffect(
+        useCallback(() => {
+
+            verificaListaAberta()
+
+            return () => {
+                setNomeLista("");
+            }
+        }, [])
+    );
 
     return (
         <Screen>
