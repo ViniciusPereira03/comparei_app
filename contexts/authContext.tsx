@@ -1,9 +1,14 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import { loginUser } from "../services/users/user";
 
 interface AuthProps {
-    authState: {authenticated: boolean | null; username: string | null};
+    authState: {
+        authenticated: boolean | null; 
+        username: string | null;
+        token?: string | null;
+        id?: string | null;
+    };
     onLogin: (username: string, password: string) => void;
     onLogout: () => void;
 }
@@ -54,14 +59,23 @@ export const AuthProvider = ({ children }: any) => {
     };
 
     const login = async (username: string, password: string) => {
-        if (username === 'admin' && password === 'admin') {
-            const newState = { authenticated: true, username: username };
+        try {
+            const response = await loginUser(username, password);
+
+            const newState = {
+                authenticated: true,
+                username,
+                id: response.id,
+                token: response.token,
+            };
+
             setAuthState(newState);
             await saveAuthState(newState);
-        } else {
-            alert("Invalid username or password")
+        } catch (error) {
+            console.error("Erro ao realizar login:", error);
+            throw error;
         }
-    }
+    };
 
     const logout = async () => {
         setAuthState({ authenticated: false, username: null });

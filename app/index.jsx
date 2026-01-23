@@ -10,14 +10,14 @@ import { useRouter } from 'expo-router';
 
 const Login = () => {
 
-    const [email, setEmail] = useState('')
+    const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
     const { onLogin } = useAuth();
     const router = useRouter();
 
 
     const handleLogin = () => {
-        onLogin(email, password);
+        onLogin(username, password);
     }
 
     const redirectToSubscribe = () => {
@@ -42,11 +42,11 @@ const Login = () => {
             <Image source={logo} style={{ width: 87, height: 80, margin: 'auto'}} />
 
             <Input
-                type="email"
-                label="E-mail"
+                type="text"
+                label="Username"
                 error={false}
-                value={email}
-                onChangeText={(e) => setEmail(e)}
+                value={username}
+                onChangeText={(e) => setUsername(e)}
             />
 
             <Input
