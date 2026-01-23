@@ -8,6 +8,7 @@ import { router } from 'expo-router'
 import logo from '../assets/images/image.png'
 import Input from '../components/Input'
 import { useAuth } from '../contexts/authContext'
+import { registerUser } from '../services/users/user'
 
 const Subscribe = () => {
     const { onLogin } = useAuth();
@@ -59,7 +60,8 @@ const Subscribe = () => {
 
     // Realizar o cadastro e logar usuário
     const subscribeAndLogin = async () => {
-        onLogin('admin', 'admin')
+        await registerUser(name, username, email, password)
+        onLogin(username, password)
     }
 
     useEffect(() => {
