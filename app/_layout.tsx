@@ -2,7 +2,7 @@ import React, { useEffect } from "react"
 import { Tabs, useRouter, useSegments } from "expo-router"
 
 import { AuthProvider, useAuth } from "../contexts/authContext"
-import { ListProvider } from "@/contexts/listContext"
+import { ListProvider } from "../contexts/listContext"
 
 const TabsLayout = () => {
     const { authState } = useAuth();
