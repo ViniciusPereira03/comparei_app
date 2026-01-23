@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { colors } from '../assets/colors/global';
@@ -6,12 +6,21 @@ import { colors } from '../assets/colors/global';
 const Range = ({ min = 0, max = 100, initial = 50, step = 1, unidade = "", onChange, marginVertical, width }) => {
     const [value, setValue] = useState(initial);
 
+    useEffect(() => {
+        setValue(initial);
+    }, [initial]);
+
     const handleValueChange = (val) => {
         setValue(val);
         if (onChange) {
         onChange(val);
         }
     };
+
+    const changeVisualValue = (val) => {
+        setValue(val);
+
+    }
 
     const styles = StyleSheet.create({
       container: {
@@ -41,7 +50,8 @@ const Range = ({ min = 0, max = 100, initial = 50, step = 1, unidade = "", onCha
                 minimumTrackTintColor={colors.hookers_green}
                 maximumTrackTintColor={colors.mint_cream}
                 thumbTintColor={colors.hookers_green}
-                onValueChange={handleValueChange}
+                onValueChange={changeVisualValue}
+                onSlidingComplete={handleValueChange}
                 thumbStyle={styles.thumb}
                 trackStyle={styles.track}
 

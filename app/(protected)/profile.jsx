@@ -6,21 +6,30 @@ import Range from '../../components/Range'
 import { colors } from '../../assets/colors/global'
 import BackButton from '../../components/BackButton'
 import { router } from 'expo-router'
-import { getUser, putDistanceRadius, uploadProfilePhoto } from '../../services/mock/users/user' // Adicione uploadProfilePhoto
+// import { getUser, putDistanceRadius, uploadProfilePhoto } from '../../services/mock/users/user' // Adicione uploadProfilePhoto
+import { getUser, putDistanceRadius, uploadProfilePhoto } from "../../services/users/user"
+import { useAuth } from '../../contexts/authContext'
+import {SERVICES_URL} from '../../services/api'
+const BASE_URL = SERVICES_URL.USERS;
 
 const Profile = () => {
     const [profile, setProfile] = useState()
     const [medal, setMedal] = useState('bronze')
     const [load, setLoad] = useState(false)
+    const [photo, setPhoto] = useState('')
+    const { authState } = useAuth();
 
     const updateDistanceRadius = async (e) => {
-        const response = await putDistanceRadius(e)
-        setProfile(response)
+        await putDistanceRadius(e, authState.id)
     }
 
     const getProfile = async () => {
-        const response = await getUser()
+        const response = await getUser(authState.id)
+        console.log(response)
+        const urlPhoto = `${BASE_URL}${response.photo}`
+        setPhoto(urlPhoto)
         setProfile(response)
+
         setLoad(true)
     }
 
@@ -37,8 +46,10 @@ const Profile = () => {
     }, [profile])
 
     useEffect(() => {
-        getProfile()
-    }, [])
+        if (authState?.id) {
+            getProfile()
+        }
+    }, [authState?.id])
 
     const handleImagePicker = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
@@ -79,25 +90,20 @@ const Profile = () => {
     }
 
     const uploadImage = async (imageUri) => {
-        const formData = new FormData()
-        formData.append('file', {
-            uri: imageUri,
-            name: 'profile.jpg',
-            type: 'image/jpeg',
-        })
-
         try {
-            const response = await uploadProfilePhoto(formData)
-            // if (response.success) {
-                setProfile((prev) => ({ ...prev, photo: response.photoUrl }))
-            // } else {
-            //     Alert.alert('Erro', 'Falha ao enviar a foto. Tente novamente.')
-            // }
+            const response = await uploadProfilePhoto(authState.id, imageUri);
+
+            setProfile((prev) => ({
+                ...prev,
+                photo: response.photo,
+            }));
+
+            getProfile()
         } catch (error) {
-            console.error(error)
-            Alert.alert('Erro', 'Ocorreu um erro ao enviar a foto.')
+            console.error(error);
+            Alert.alert('Erro', 'Ocorreu um erro ao enviar a foto.');
         }
-    }
+    };
 
     return (
         <Screen style={{ alignItems: 'center', justifyContent: 'center' }}>
@@ -115,7 +121,12 @@ const Profile = () => {
                     <View style={{ marginTop: '30%' }}>
                         <View style={styled.profile_view}>
                             <TouchableOpacity onPress={handleImagePicker}>
-                                <Image src={profile.photo} style={styled.profileImage} />
+                                {photo && (
+                                    <Image
+                                        source={{ uri: photo }}
+                                        style={styled.profileImage}
+                                    />
+                                )}
                             </TouchableOpacity>
                             <Image source={medal} style={styled.medal} />
                             <Text style={styled.level}>{profile.level}</Text>
@@ -131,7 +142,7 @@ const Profile = () => {
                             <Range 
                                 min={2}
                                 max={35}
-                                initial={profile.distance_radius}
+                                initial={profile.ray_distance}
                                 unidade={'Km'}
                                 onChange={(e) => updateDistanceRadius(e)}
                                 marginVertical={'0'}
