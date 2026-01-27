@@ -140,7 +140,7 @@ const Profile = () => {
                         <View style={{ width: '100%', marginTop: 32 }}>
                             <Text>Buscar mercados no raio</Text>
                             <Range 
-                                min={2}
+                                min={1}
                                 max={35}
                                 initial={profile.ray_distance}
                                 unidade={'Km'}
