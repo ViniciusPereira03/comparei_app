@@ -14,7 +14,10 @@ import Card from '../../components/Card.jsx'
 import Badge from '../../components/Badge.jsx'
 import ProgressBar from '../../components/ProgressBar.jsx'
 import { format } from 'date-fns';
-import { searchProduct } from '../../services/mock/products/product.js'
+import { searchProduct } from '../../services/products/promer.tsx'
+import { SERVICES_URL } from '../../services/api.tsx';
+import { useGps } from '../../contexts/gpsContext.tsx';
+
 
 
 const Search = () => {
@@ -23,7 +26,9 @@ const Search = () => {
     const [filtroOrdem, setFiltroOrdem] = useState(false)
     const [filtroCategoria, setFiltroCategoria] = useState('')
     const [items, setItems] = useState([])
-
+    const BASE_URL_PROMER = SERVICES_URL.PROMER;
+    const { location, refreshLocation, loading } = useGps();
+    
     const styled = StyleSheet.create({
         price: {
             fontSize: 24,
@@ -44,6 +49,12 @@ const Search = () => {
 
     const pesquisar = async () => {
         setOpenFilter(false)
+        await refreshLocation();
+
+        if (!location) {
+            alert('Por favor, habilite a localização para realizar a busca por produtos próximos.')
+            return;
+        }
 
         if (search) {
             const filtro = {
@@ -52,8 +63,12 @@ const Search = () => {
                 categoria: filtroCategoria
             }
 
-            const response = await searchProduct(filtro)
-            setItems(response)
+            try {
+                const response = await searchProduct(filtro, location)
+                setItems(response)
+            } catch (error) {
+                console.log("Erro ao buscar produtos:", error);
+            }
         } else {
             setItems([])
         }
@@ -104,56 +119,65 @@ const Search = () => {
                     </TouchableOpacity>
                 </View>
 
-
-                {items.length > 0 ? (
-                    <View style={{
-                        marginTop: 16,
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                        alignItems: 'flex-start',
-                        flexWrap: 'wrap'
-                    }}>
-
-                        {items.map((i, index) => (
-                            <Card 
-                                key={index} 
-                                width="48.8%"
-                                style={{
-                                    justifyContent: 'flex-start',
-                                    alignItems: 'center',
-                                }}
-                            >
-                                <Image source={{uri: "https://io.convertiez.com.br/m/superpaguemenos/shop/products/images/17846/small/arroz-prato-fino-tipo-1-5kg_58932.jpg"}} width={136} height={136}/>
-                                
-                                <View style={{
-                                    width: '100%',
-                                    alignItems: 'flex-start',
-
-                                }}>
-                                    <Badge text={i.market} backgroundColor={colors.hookers_green}/>
-                                    <Text>{i.product}</Text>
-                                    <Text style={styled.price}>R$ {i.price}</Text>
-                                </View>
-
-                                <ProgressBar percentage={i.confidence}/>
-                                <Text style={styled.update}>Atualizado em: {format(new Date(i.updatedAt), "dd/MM/yyyy")}</Text>
-
-                                <Button 
-                                    type='add'
-                                    backgroundColor={colors.turquoise}
-                                    width='100%'
-                                    text='salvar na lista'
-                                    onPress={() => addList(i)}
-                                />
-                            </Card>
-                        ))}
-
-                    </View>
-                ) : (
+                {items === null ? (
                     <View style={{marginTop: "60%"}}>
                         <ImageSearcdh width={160} height={149.11}/>
+                        <Text style={{ marginTop: 16 }}>Nenhum resultado encontrado!</Text>
                     </View>
+                ) : (
+                    <>
+                        {items.length > 0 ? (
+                            <View style={{
+                                marginTop: 16,
+                                flexDirection: 'row',
+                                justifyContent: 'space-between',
+                                alignItems: 'flex-start',
+                                flexWrap: 'wrap'
+                            }}>
+        
+                                {items.map((i, index) => (
+                                    <Card 
+                                        key={index} 
+                                        width="48.8%"
+                                        style={{
+                                            justifyContent: 'flex-start',
+                                            alignItems: 'center',
+                                        }}
+                                    >
+                                        <Image source={{uri: `${BASE_URL_PROMER}/produto/image/${i.produto.bar_code}`}} width={136} height={136}/>
+                                        
+                                        <View style={{
+                                            width: '100%',
+                                            alignItems: 'flex-start',
+        
+                                        }}>
+                                            <Badge text={i.mercado.nome} backgroundColor={colors.hookers_green}/>
+                                            <Text>{i.produto.nome}</Text>
+                                            <Text style={styled.price}>R$ {i.preco_unitario}</Text>
+                                        </View>
+        
+                                        <ProgressBar percentage={i.nivel_confianca}/>
+                                        <Text style={styled.update}>Atualizado em: {format(new Date(i.modified_at), "dd/MM/yyyy")}</Text>
+        
+                                        <Button 
+                                            type='add'
+                                            backgroundColor={colors.turquoise}
+                                            width='100%'
+                                            text='salvar na lista'
+                                            onPress={() => addList(i)}
+                                        />
+                                    </Card>
+                                ))}
+        
+                            </View>
+                        ) : (
+                            <View style={{marginTop: "60%"}}>
+                                <ImageSearcdh width={160} height={149.11}/>
+                            </View>
+                        )}
+                    </>
                 )}
+
 
             </View>
 
