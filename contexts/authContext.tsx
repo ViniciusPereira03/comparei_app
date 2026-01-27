@@ -1,14 +1,18 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { loginUser } from "../services/users/user";
+import { tokenStore } from "../services/tokenStore";
+
+type AuthState = {
+    authenticated: boolean | null;
+    username: string | null;
+    token: string | null;
+    id: string | null;
+};
 
 interface AuthProps {
-    authState: {
-        authenticated: boolean | null; 
-        username: string | null;
-        token?: string | null;
-        id?: string | null;
-    };
+    authState: AuthState;
+    loading: boolean;
     onLogin: (username: string, password: string) => void;
     onLogout: () => void;
 }
@@ -16,17 +20,27 @@ interface AuthProps {
 const AuthContext = createContext<Partial<AuthProps>>({});
 
 export const useAuth = () => {
-    return useContext(AuthContext);
-}
+    const context = useContext(AuthContext);
+
+    if (!context) {
+        throw new Error("useAuth must be used within an AuthProvider");
+    }
+
+    return context;
+};
 
 export const AuthProvider = ({ children }: any) => {
-    const [authState, setAuthState] = useState<{
-        authenticated: boolean | null;
-        username: string | null;
-    }>({
+    const [authState, setAuthState] = useState<AuthState>({
         authenticated: null,
-        username: null
+        username: null,
+        token: null,
+        id: null,
     });
+
+    /**
+     * Controla se o estado já foi reidratado do storage
+     */
+    const [loading, setLoading] = useState<boolean>(true);
 
     const saveAuthState = async (state: { authenticated: boolean; username: string | null }) => {
         try {
@@ -40,13 +54,32 @@ export const AuthProvider = ({ children }: any) => {
         try {
             const storedState = await AsyncStorage.getItem("authState");
             if (storedState) {
-                setAuthState(JSON.parse(storedState));
+                const parsedState: AuthState = JSON.parse(storedState);
+
+                setAuthState(parsedState);
+
+                // 🔑 Mantém o token atualizado no apiClient
+                if (parsedState.token) {
+                    tokenStore.setToken(parsedState.token);
+                }
             } else {
-                setAuthState({ authenticated: false, username: null });
+                setAuthState({
+                    authenticated: false,
+                    username: null,
+                    token: null,
+                    id: null,
+                });
             }
         } catch (error) {
             console.error("Erro ao carregar estado de autenticação:", error);
-            setAuthState({ authenticated: false, username: null });
+            setAuthState({
+                authenticated: false,
+                username: null,
+                token: null,
+                id: null,
+            });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -69,6 +102,7 @@ export const AuthProvider = ({ children }: any) => {
                 token: response.token,
             };
 
+            tokenStore.setToken(newState.token);
             setAuthState(newState);
             await saveAuthState(newState);
         } catch (error) {
@@ -78,7 +112,13 @@ export const AuthProvider = ({ children }: any) => {
     };
 
     const logout = async () => {
-        setAuthState({ authenticated: false, username: null });
+        tokenStore.setToken(null);
+        setAuthState({
+            authenticated: false,
+            username: null,
+            token: null,
+            id: null,
+        });
         await clearAuthState();
     }
 
@@ -86,11 +126,12 @@ export const AuthProvider = ({ children }: any) => {
         loadAuthState();
     }, []);
 
-    const value = {
+    const value: AuthProps = {
+        authState,
+        loading,
         onLogin: login,
         onLogout: logout,
-        authState
-    }
+    };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

@@ -1,5 +1,6 @@
-// services/apiClient.ts
+// services/apiClient.tsx
 
+import { tokenStore } from './tokenStore';
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL_BASE || 'http://localhost';
 
 export const SERVICES_URL = {
@@ -24,7 +25,6 @@ export const apiRequest = async <TResponse = any, TBody = any>(
     endpoint: string,
     method: HttpMethod = 'GET',
     body?: TBody,
-    token?: string | null
 ): Promise<TResponse> => {
     const url = `${baseUrl}${endpoint}`;
 
@@ -35,13 +35,16 @@ export const apiRequest = async <TResponse = any, TBody = any>(
     const apiKey = API_KEYS[baseUrl];
     if (apiKey) headers.apiKey = apiKey;
 
+    const token = tokenStore.getToken();
     if (token) headers.Authorization = `Bearer ${token}`;
 
     console.log('[apiRequest]', {
-        url,
         method,
+        url,
+        headers,
         body
     });
+    
 
 
     const response = await fetch(url, {
