@@ -77,3 +77,23 @@ export const searchProduct = async (
     'GET'
   );
 };
+
+export const validaImage = async (imageBase64: string): Promise<Produto> => {
+  return apiRequest<Produto>(
+    BASE_URL,
+    `/produto/identificar`,
+    'POST',
+    {
+      foto: imageBase64
+    }
+  );
+}
+
+export const createProduct = async (productData: Partial<Produto>): Promise<Produto> => { 
+  return apiRequest<Produto>(
+    BASE_URL,
+    `/produto`,
+    'POST',
+    productData
+  );
+}

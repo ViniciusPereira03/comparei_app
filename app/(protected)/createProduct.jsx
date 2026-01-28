@@ -7,17 +7,18 @@ import { colors } from '../../assets/colors/global'
 import Input from '../../components/Input'
 import BackButton from '../../components/BackButton'
 import { useAuth } from '../../contexts/authContext'
-import * as Location from 'expo-location';
+import { useGps } from '../../contexts/gpsContext.tsx'
 import ShortButton from '../../components/ShortButton'
 import { CameraView, useCameraPermissions } from 'expo-camera'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
+import { createProduct } from '../../services/products/promer'
 
 const CreateProduct = () => {
     const params = useLocalSearchParams();
     const { authState } = useAuth();
+    const { location, refreshLocation } = useGps();
     let cameraRef = useRef();
     const [permission, requestPermission] = useCameraPermissions();
-    const [location, setLocation] = useState(null);
     const [step, setStep] = useState(1);
     const [nomeProduto, setNomeProduto] = useState("");
     const [marcaProduto, setMarcaProduto] = useState("");
@@ -25,6 +26,7 @@ const CreateProduct = () => {
     const [unidade, setUnidade] = useState("");
     const [preco, setPreco] = useState("")
     const [barCode, setBarCode] = useState("")
+    const [foto, setFoto] = useState("");
 
     const styled = StyleSheet.create({
         title: {
@@ -107,26 +109,39 @@ const CreateProduct = () => {
         }
     })
 
-    const salvar = () => {
-        console.log("salvar produto")
+    const salvar = async () => {
+        await refreshLocation();
 
         const produto = {
-            nomeProduto,
-            marcaProduto,
-            quantidade,
+            nome: nomeProduto,
+            marca: marcaProduto,
+            quantidade: parseFloat(quantidade.replaceAll(',', '.')),
             unidade,
+            bar_code: barCode,
+            latitude: location ? location.latitude : null,
+            longitude: location ? location.longitude : null,
             preco,
-            barCode,
-            location,
-            authState
+            foto
         }
 
-        console.log(produto)
+        try {
+            await createProduct(produto);
+            setStep(1);
+            setNomeProduto("");
+            setMarcaProduto("");
+            setQuantidade("");
+            setUnidade("");
+            setPreco("");
+            setBarCode("");
+            setFoto("");
+        } catch (error) {
+            console.log("Erro ao criar produto:", error);
+        }
+
         router.replace('/search')
     }
 
     const scanner = (e) => {
-        console.log("DATA: ", e.data)
         setBarCode(e.data)
 
         setTimeout(() => {
@@ -139,36 +154,20 @@ const CreateProduct = () => {
             const product_info = JSON.parse(params.product)
             const p = product_info
 
-            setNomeProduto(p.product);
-            setMarcaProduto(p.brand);
-            setQuantidade(`${p.amount}`);
-            setUnidade(p.unity);
-            setPreco(`${p.price}`.replaceAll('.', ','));
+            setNomeProduto(p.nome);
+            setMarcaProduto(p.marca);
+            setQuantidade(`${p.quantidade}`);
+            setUnidade(p.unidade);
+            setPreco(`${p.preco}`.replaceAll('.', ','));
+            setFoto(p.foto);
         }
     }
-
-    async function getCurrentLocation() {
-          
-        let { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') {
-            alert('Permission to access location was denied');
-            return;
-        }
-    
-        let location = await Location.getCurrentPositionAsync({});
-        setLocation(location);
-    }
-    useEffect(() => {
-        getCurrentLocation();
-    }, []);
 
     useFocusEffect(
         useCallback(() => {
-            getCurrentLocation();
             loadParams();
 
             return () => {
-                setLocation(null);
                 setStep(1);
                 setNomeProduto("");
                 setMarcaProduto("");
@@ -176,6 +175,7 @@ const CreateProduct = () => {
                 setUnidade("");
                 setPreco("");
                 setBarCode("");
+                setFoto("");
             }
         }, [params.product_info])
     );

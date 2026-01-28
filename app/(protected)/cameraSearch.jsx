@@ -1,20 +1,24 @@
-import { StyleSheet, View, TouchableOpacity, Alert } from 'react-native'
+import { StyleSheet, View, TouchableOpacity, Alert, ActivityIndicator } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { colors } from '../../assets/colors/global';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { router } from 'expo-router';
 import BackButton from '../../components/BackButton';
-import { validaImage } from '../../services/mock/products/product';
+import { validaImage } from '../../services/products/promer';
 import { useList } from '../../contexts/listContext';
+import { useGps } from '../../contexts/gpsContext.tsx';
 
 const CameraSearch = () => {
     const {listState} = useList();
     let cameraRef = useRef();
+    const { location, refreshLocation, loading } = useGps();
     const [permission, requestPermission] = useCameraPermissions();
     const [photo, setPhoto] = useState('');
     const [barcodeMode, setBarcodeMode] = useState(false)
     const [barcodeValue, setBarcodeValue] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+
 
     useEffect(() => {
         if (permission) {
@@ -26,65 +30,60 @@ const CameraSearch = () => {
 
 
     const takePic = async () => {
-        let options = {
-            quality: 1,
-            base64: false,
-            exif: false
-        }
+        if (isLoading) return;
 
-        let newPhoto = await cameraRef.current.takePictureAsync(options);
-        setPhoto(newPhoto)
+        setIsLoading(true);
 
-        const formData = new FormData()
-        formData.append('file', {
-            uri: newPhoto.uri,
-            name: 'product_image.jpg',
-            type: 'image/jpeg',
-        })
-
-        const response = await validaImage(formData)
-
-        switch (response.code) {
-            case 200:
-                Alert.alert('Sucesso', 'Produto Atualizado!')
-
-                if (listState.id) {
-                    router.replace({
-                        pathname: '/list',
-                        params: {
-                            id: listState.id
-                        }
-                    })
-                } else {
-                    router.replace({ pathname: '/search' })
-                }
-                        
-                break;
-        
-            case 302:
-                Alert.alert('Sucesso', 'Valor do produto confirmado!')
-
-                if (listState.id) {
-                    router.replace({
-                        pathname: '/list',
-                        params: {
-                            id: listState.id
-                        }
-                    })
-                } else {
-                    router.replace({ pathname: '/search' })
-                }
-                break;
-        
-            case 404:
+        try {
+            let options = {
+                quality: 1,
+                base64: true,
+                exif: false
+            }
+    
+            let newPhoto = await cameraRef.current.takePictureAsync(options);
+            setPhoto(newPhoto)
+    
+            const base64WithPrefix = `data:image/jpeg;base64,${newPhoto.base64}`;
+            const response = await validaImage(base64WithPrefix);
+    
+            console.log("Resposta do reconhecimento de imagem:", response);
+    
+            await refreshLocation();
+            
+            if (!location) {
+                Alert.alert(
+                    'Localização necessária',
+                    'Por favor, habilite a localização para realizar a busca por produtos próximos.'
+                );
+                return;
+            }
+    
+            const filtro = {
+                texto: response.nome,
+                ordem: "",
+                categoria: ""
+            }
+    
+            try {
+                const responseProduct = await searchProduct(filtro, location)
+    
+                console.log("Produtos encontrados:", responseProduct);
+            } catch (error) {
+                console.log("Erro ao buscar produtos:", error);
+                
+                response.foto = base64WithPrefix;
                 router.replace({ pathname: '/createProduct', params: {
-                    product: JSON.stringify(response.product_info)
+                    product: JSON.stringify(response)
                 } })
-                break;
-        
-            default:
-                break;
+            }
+        } catch (error) {
+            console.log("Erro ao tirar ou processar a foto:", error);
+            Alert.alert('Erro', 'Não foi possível processar a imagem.');
+        } finally {
+            setIsLoading(false);
         }
+
     }
 
     const scanner = (e) => {
@@ -104,6 +103,12 @@ const CameraSearch = () => {
 
     return (
         <>
+            {isLoading && (
+                <View style={styles.loadingOverlay}>
+                    <ActivityIndicator size="large" color={colors.white} />
+                </View>
+            )}
+
             <View style={styles.header}>
                 <BackButton 
                     accessibilityHint="Pressione para voltar"
@@ -152,7 +157,11 @@ const CameraSearch = () => {
                         <View style={styles.buttonContainer}>
                             <View style={{ width: 32 }}></View>
 
-                            <TouchableOpacity style={styles.picture_button} onPress={takePic}>
+                            <TouchableOpacity
+                                style={styles.picture_button}
+                                onPress={takePic}
+                                disabled={isLoading}
+                            >
                                 <View style={styles.button_inside}></View>
                             </TouchableOpacity>
 
@@ -258,7 +267,18 @@ const styles = StyleSheet.create({
         left: 16,
         zIndex: 10,
         backgroundColor: 'transparent'
-    }
+    },
+    loadingOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 999,
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
 });
 
 export default CameraSearch
