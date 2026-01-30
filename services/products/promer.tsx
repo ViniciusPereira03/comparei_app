@@ -97,3 +97,23 @@ export const createProduct = async (productData: Partial<Produto>): Promise<Prod
     productData
   );
 }
+
+export const searchMarketsByLocation = async (
+  latitude: number,
+  longitude: number
+): Promise<Mercado[]> => {
+  return apiRequest<Mercado[]>(
+    BASE_URL,
+    `/mercados?lat=${latitude}&lng=${longitude}`,
+    'GET'
+  );
+}
+
+export const createMarket = async (marketData: Partial<Mercado>): Promise<Mercado> => { 
+  return apiRequest<Mercado>(
+    BASE_URL,
+    `/mercado`,
+    'POST',
+    marketData
+  );
+}

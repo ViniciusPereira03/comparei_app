@@ -11,7 +11,7 @@ import { useGps } from '../../contexts/gpsContext.tsx'
 import ShortButton from '../../components/ShortButton'
 import { CameraView, useCameraPermissions } from 'expo-camera'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
-import { createProduct } from '../../services/products/promer'
+import { createMarket, createProduct, searchMarketsByLocation } from '../../services/products/promer'
 
 const CreateProduct = () => {
     const params = useLocalSearchParams();
@@ -27,6 +27,15 @@ const CreateProduct = () => {
     const [preco, setPreco] = useState("")
     const [barCode, setBarCode] = useState("")
     const [foto, setFoto] = useState("");
+    const [mercado_id, setMercadoId] = useState(0);
+    const [mercados, setMercados] = useState([]);
+    const [selecionandoMercado, setSelecionandoMercado] = useState(false);
+    const [cadastrandoMercado, setCadastrandoMercado] = useState(false);
+    const [nomeMercado, setNomeMercado] = useState("");
+    const [enderecoMercado, setEnderecoMercado] = useState("");
+    const [numeroMercado, setNumeroMercado] = useState("");
+    const [bairroMercado, setBairroMercado] = useState("");
+    const [cidadeMercado, setCidadeMercado] = useState("");
 
     const styled = StyleSheet.create({
         title: {
@@ -111,6 +120,37 @@ const CreateProduct = () => {
 
     const salvar = async () => {
         await refreshLocation();
+        if (!location) {
+            console.log("Localização não disponível.");
+            return;
+        }
+
+        try {
+            const mercadosEncontrados = await searchMarketsByLocation(
+                location.latitude,
+                location.longitude
+            );
+
+            if (mercadosEncontrados === null || mercadosEncontrados.length === 0) {
+                setCadastrandoMercado(true);
+                return;
+            }
+
+            // 🔹 Caso exista apenas um mercado
+            if (mercadosEncontrados.length === 1) {
+                setMercadoId(mercadosEncontrados[0].id);
+            }
+
+            // 🔹 Caso exista mais de um mercado
+            if (mercadosEncontrados.length > 1 && mercado_id === 0) {
+                setMercados(mercadosEncontrados);
+                setSelecionandoMercado(true);
+                return; // ⛔ pausa o fluxo até o usuário escolher
+            }
+        } catch (error) {
+            console.log("Erro ao buscar mercados:", error);
+            return;
+        }
 
         const produto = {
             nome: nomeProduto,
@@ -120,8 +160,9 @@ const CreateProduct = () => {
             bar_code: barCode,
             latitude: location ? location.latitude : null,
             longitude: location ? location.longitude : null,
-            preco,
-            foto
+            preco: parseFloat(preco.replaceAll(',', '.')),
+            foto,
+            mercado_id
         }
 
         try {
@@ -134,6 +175,7 @@ const CreateProduct = () => {
             setPreco("");
             setBarCode("");
             setFoto("");
+            setMercadoId(0);
         } catch (error) {
             console.log("Erro ao criar produto:", error);
         }
@@ -142,12 +184,18 @@ const CreateProduct = () => {
     }
 
     const scanner = (e) => {
+        if (barCode !== "") return;
         setBarCode(e.data)
-
-        setTimeout(() => {
-            salvar();
-        }, 100);
+        // setTimeout(() => {
+        //     salvar();
+        // }, 100);
     }
+
+    useEffect(() => {
+        if (barCode === "") return;
+
+        salvar();
+    }, [barCode])
     
     const loadParams = () => {
         if (params.product) {
@@ -162,6 +210,35 @@ const CreateProduct = () => {
             setFoto(p.foto);
         }
     }
+
+    const criarMercadoManual = async () => {
+        if (!location) return;
+
+        const novoMercado = {
+            nome: nomeMercado,
+            endereco: enderecoMercado,
+            numero: parseInt(numeroMercado),
+            bairro: bairroMercado,
+            cidade: cidadeMercado,
+            latitude: location.latitude,
+            longitude: location.longitude
+        };
+
+        try {
+            const mercadoCriado = await createMarket(novoMercado);
+
+            setMercadoId(mercadoCriado.id);
+            setCadastrandoMercado(false);
+
+            // continua fluxo do produto
+            setTimeout(() => {
+                salvar();
+            }, 100);
+
+        } catch (error) {
+            console.log("Erro ao criar mercado:", error);
+        }
+    };
 
     useFocusEffect(
         useCallback(() => {
@@ -194,112 +271,224 @@ const CreateProduct = () => {
                 height: '100%',
                 justifyContent: 'space-between'
             }}>
-                <View style={{
-                    width: '100%',
-                    flexDirection: 'row',
-                    justifyContent: 'flex-start',
-                    alignItems: 'center',
-                    marginBottom: 16
-                }}>
-                    <BackButton 
-                        accessibilityHint="Pressione para voltar"
-                        onPress={() => router.replace('/search')}
-                    />
-                    
-                    <Text style={styled.title}>Cadastrar produto</Text>
-                </View>
 
                 {step === 1 ? (
-                    <View style={{
-                        height: '90%',
-                        justifyContent: 'space-between'
-                    }}>
-                        <View>
-                            <Input
-                                width="100%"
-                                type="text"
-                                label="Nome do produto"
-                                error={false}
-                                value={nomeProduto}
-                                onChangeText={(e) => setNomeProduto(e)}
+                    <>
+                        <View style={{
+                            width: '100%',
+                            flexDirection: 'row',
+                            justifyContent: 'flex-start',
+                            alignItems: 'center',
+                            marginBottom: 16
+                        }}>
+                            <BackButton 
+                                accessibilityHint="Pressione para voltar"
+                                onPress={() => router.replace('/search')}
                             />
+                            
+                            <Text style={styled.title}>Cadastrar produto</Text>
+                        </View>
+                    
+                        <View style={{
+                            height: '90%',
+                            justifyContent: 'space-between'
+                        }}>
+                            <View>
+                                <Input
+                                    width="100%"
+                                    type="text"
+                                    label="Nome do produto"
+                                    error={false}
+                                    value={nomeProduto}
+                                    onChangeText={(e) => setNomeProduto(e)}
+                                />
 
-                            <Input
-                                type="text"
-                                label="Marca do produto"
-                                error={false}
-                                value={marcaProduto}
-                                onChangeText={(e) => setMarcaProduto(e)}
-                            />
+                                <Input
+                                    type="text"
+                                    label="Marca do produto"
+                                    error={false}
+                                    value={marcaProduto}
+                                    onChangeText={(e) => setMarcaProduto(e)}
+                                />
 
-                            <View style={{
-                                width: '100%',
-                                flexDirection: 'row',
-                                justifyContent: 'space-between'
-                            }}>
-                                <View style={{width: '48%'}}>
-                                    <Input
-                                        type="numeric"
-                                        label="Quantidade"
-                                        error={false}
-                                        value={quantidade}
-                                        onChangeText={(e) => setQuantidade(e)}
-                                    />
+                                <View style={{
+                                    width: '100%',
+                                    flexDirection: 'row',
+                                    justifyContent: 'space-between'
+                                }}>
+                                    <View style={{width: '48%'}}>
+                                        <Input
+                                            type="numeric"
+                                            label="Quantidade"
+                                            error={false}
+                                            value={quantidade}
+                                            onChangeText={(e) => setQuantidade(e)}
+                                        />
+                                    </View>
+                                    <View style={{width: '48%'}}>
+                                        <Input
+                                            type="text"
+                                            label="Unidade"
+                                            error={false}
+                                            value={unidade}
+                                            onChangeText={(e) => setUnidade(e)}
+                                        />
+                                    </View>
                                 </View>
-                                <View style={{width: '48%'}}>
-                                    <Input
-                                        type="text"
-                                        label="Unidade"
-                                        error={false}
-                                        value={unidade}
-                                        onChangeText={(e) => setUnidade(e)}
-                                    />
-                                </View>
+
+                                <Input
+                                    type="numeric"
+                                    label="Preço do produto"
+                                    error={false}
+                                    value={preco}
+                                    onChangeText={(e) => setPreco(e)}
+                                />
                             </View>
 
-                            <Input
-                                type="numeric"
-                                label="Preço do produto"
-                                error={false}
-                                value={preco}
-                                onChangeText={(e) => setPreco(e)}
-                            />
+                            <View style={{alignItems: 'flex-end'}}>
+                                <ShortButton 
+                                    width="100%"
+                                    backgroundColor={colors.turquoise}
+                                    text="Avançar"
+                                    accessibilityHint="Pressione para avançar no cadastro"
+                                    type={'next'}
+                                    onPress={() => setStep(step+1)}
+                                />
+                            </View>
                         </View>
-
-                        <View style={{alignItems: 'flex-end'}}>
-                            <ShortButton 
-                                width="100%"
-                                backgroundColor={colors.turquoise}
-                                text="Avançar"
-                                accessibilityHint="Pressione para avançar no cadastro"
-                                type={'next'}
-                                onPress={() => setStep(step+1)}
-                            />
-                        </View>
-                    </View>
+                    </>
                 ) : (
-                    <View style={styled.container}>
-                        <CameraView
-                            ref={cameraRef}
-                            style={styled.camera}
-                            enableTorch={false}
-                            mode="picture"
-                            barcodeScannerSettings={{
-                                barcodeTypes: ['aztec', 'codabar', 'code128', 'code39', 'code93', 'ean8', 'ean13', 'upc_a', 'upc_e'],
-                            }}
-                            onBarcodeScanned={(e) => scanner(e)}
-                        >
-                            <View style={styled.buttonContainer}>
-                                <TouchableOpacity style={styled.barcode_button} onPress={() => setBarcodeMode(false)}>
-                                    <MaterialCommunityIcons name="barcode-scan" size={80} color={colors.white} />
-                                </TouchableOpacity>
+                    <>
+                        {cadastrandoMercado ? (
+                            <>
+                                <View style={{
+                                    width: '100%',
+                                    flexDirection: 'row',
+                                    justifyContent: 'flex-start',
+                                    alignItems: 'center',
+                                    marginBottom: 16
+                                }}>
+                                    <BackButton 
+                                        accessibilityHint="Pressione para voltar"
+                                        onPress={() => router.replace('/search')}
+                                    />
+                                    
+                                    <Text style={styled.title}>Cadastrar Mercado</Text>
+                                </View>
+                            
+                                <View style={{
+                                    height: '90%',
+                                    justifyContent: 'space-between'
+                                }}>
+                                    <View>
+                                        <Input
+                                            label="Nome do mercado"
+                                            value={nomeMercado}
+                                            onChangeText={setNomeMercado}
+                                        />
+
+                                        <Input
+                                            label="Endereço"
+                                            value={enderecoMercado}
+                                            onChangeText={setEnderecoMercado}
+                                        />
+
+                                        <Input
+                                            label="Número"
+                                            value={numeroMercado}
+                                            onChangeText={setNumeroMercado}
+                                        />
+
+                                        <Input
+                                            label="Bairro"
+                                            value={bairroMercado}
+                                            onChangeText={setBairroMercado}
+                                        />
+
+                                        <Input
+                                            label="Cidade"
+                                            value={cidadeMercado}
+                                            onChangeText={setCidadeMercado}
+                                        />
+
+                                        <View style={{alignItems: 'flex-end'}}>
+                                            <ShortButton
+                                                width="100%"
+                                                backgroundColor={colors.turquoise}
+                                                text="Salvar Mercado"
+                                                onPress={criarMercadoManual}
+                                                // text="Avançar"
+                                                accessibilityHint="Pressione para avançar no cadastro do mercado"
+                                                type={'next'}
+                                            />
+                                        </View>
+                                    </View>
+                                </View>
+                            </>
+
+                        ) : selecionandoMercado ? (
+                            <View style={{ padding: 16 }}>
+                                <Text style={{
+                                    fontSize: 18,
+                                    color: colors.hookers_green,
+                                    marginBottom: 12
+                                }}>
+                                    Selecione o mercado
+                                </Text>
+
+                                {mercados.map((m) => (
+                                    <TouchableOpacity
+                                        key={m.id}
+                                        style={{
+                                            padding: 16,
+                                            borderWidth: 1,
+                                            borderColor: colors.turquoise,
+                                            borderRadius: 8,
+                                            marginBottom: 8
+                                        }}
+                                        onPress={() => {
+                                            setMercadoId(m.id);
+                                            setSelecionandoMercado(false);
+
+                                            // 🔁 continua o fluxo automaticamente
+                                            setTimeout(() => {
+                                                salvar();
+                                            }, 100);
+                                        }}
+                                    >
+                                        <Text style={{ fontWeight: 'bold' }}>{m.nome}</Text>
+                                        <Text>{m.endereco}, {m.numero}</Text>
+                                        <Text>{m.bairro} - {m.cidade}</Text>
+                                    </TouchableOpacity>
+                                ))}
                             </View>
-                        </CameraView>
-                        <View style={styled.delimiter_start}></View>
-                        <View style={styled.scanner}></View>
-                        <View style={styled.delimiter_end}></View>
-                    </View>
+                        ) : (
+                            <View style={styled.container}>
+                                <CameraView
+                                    ref={cameraRef}
+                                    style={styled.camera}
+                                    enableTorch={false}
+                                    mode="picture"
+                                    barcodeScannerSettings={{
+                                        barcodeTypes: ['aztec', 'codabar', 'code128', 'code39', 'code93', 'ean8', 'ean13', 'upc_a', 'upc_e'],
+                                    }}
+                                    onBarcodeScanned={(e) => scanner(e)}
+                                >
+                                    <View style={styled.buttonContainer}>
+                                        <TouchableOpacity style={styled.barcode_button} onPress={() => setBarcodeMode(false)}>
+                                            <MaterialCommunityIcons name="barcode-scan" size={80} color={colors.white} />
+                                        </TouchableOpacity>
+                                    </View>
+                                </CameraView>
+                                <View style={styled.delimiter_start}></View>
+                                <View style={styled.scanner}></View>
+                                <View style={styled.delimiter_end}></View>
+                            </View>
+                        )}
+                    </>
                 )}
+
+                
             </View>
         </Screen>
     )
