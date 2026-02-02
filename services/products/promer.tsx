@@ -117,3 +117,11 @@ export const createMarket = async (marketData: Partial<Mercado>): Promise<Mercad
     marketData
   );
 }
+
+export const getProductByBarcode = async (barcode: string): Promise<Produto | null> => {
+  return apiRequest<Produto | null>(
+    BASE_URL,
+    `/produto/barcode/${barcode}`,
+    'GET'
+  );
+}

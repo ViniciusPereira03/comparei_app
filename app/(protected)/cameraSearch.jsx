@@ -5,7 +5,7 @@ import { colors } from '../../assets/colors/global';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { router } from 'expo-router';
 import BackButton from '../../components/BackButton';
-import { validaImage } from '../../services/products/promer';
+import { getProductByBarcode, validaImage } from '../../services/products/promer';
 import { useList } from '../../contexts/listContext';
 import { useGps } from '../../contexts/gpsContext.tsx';
 
@@ -90,14 +90,38 @@ const CameraSearch = () => {
         setBarcodeValue(e.data)
     }
 
+    const searchProductByBarcode = async (barcode) => {
+        setIsLoading(true);
+
+        try {
+            const response = await getProductByBarcode(barcode)
+    
+            router.replace({ pathname: '/search', params: {
+                product: JSON.stringify(response)
+            } })
+
+            setIsLoading(false);
+
+        } catch (error) {
+            console.log(error)
+            setIsLoading(false);
+            Alert.alert('Erro', 'Não foi possível buscar o produto pelo código de barras.');
+        }
+
+        return null;
+    }
+
     useEffect(() => {
         if (barcodeValue) {
-            router.replace({
-                pathname: '/camera',
-                params: {
-                    id: barcodeValue
-                }
-            })
+            searchProductByBarcode(barcodeValue)
+
+
+            // router.replace({
+            //     pathname: '/camera',
+            //     params: {
+            //         id: barcodeValue
+            //     }
+            // })
         }
     }, [barcodeValue])
 

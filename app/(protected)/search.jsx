@@ -1,8 +1,8 @@
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import Screen from '../../components/Screen'
 import ImageSearcdh from '../../assets/images/search/image_search.js'
-import { router } from 'expo-router'
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router'
 import Input from '../../components/Input.jsx'
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { colors } from '../../assets/colors/global.jsx'
@@ -21,6 +21,7 @@ import { useGps } from '../../contexts/gpsContext.tsx';
 
 
 const Search = () => {
+    const params = useLocalSearchParams();
     const [search, setSearch] = useState("")
     const [openFilter, setOpenFilter] = useState(false)
     const [filtroOrdem, setFiltroOrdem] = useState(false)
@@ -73,6 +74,23 @@ const Search = () => {
             setItems([])
         }
     }
+
+    const loadParams = () => {
+        if (params.product) {
+            setItems(params.product ? JSON.parse(params.product) : []);
+        }
+    } 
+
+    useFocusEffect(
+        useCallback(() => {
+            loadParams();
+
+            return () => {
+                setItems([]);
+                setSearch('');
+            }
+        }, [params.product])
+    );
 
     return (
         <Screen scroll>
