@@ -1,9 +1,17 @@
 import React from 'react'
-import { ScrollView, StyleSheet, View } from 'react-native'
+import {
+    ScrollView,
+    StyleSheet,
+    View,
+    TouchableWithoutFeedback,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform
+} from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { colors } from '../assets/colors/global'
 
-const Screen = (props) => {
+const Screen = ({ children, scroll = false, style = {} }) => {
 
     const styles = StyleSheet.create({
         screen: {
@@ -11,30 +19,51 @@ const Screen = (props) => {
             backgroundColor: colors.mint_green,
             paddingTop: 16,
             paddingBottom: 16,
-            ...props.style
+            height: "100%",
+            ...style
         },
-        scroll: {
+        scrollContent: {
             flexGrow: 1,
             paddingHorizontal: 16,
+            ...style.scrollContent
         },
         view: {
+            flex: 1,
             width: '100%',
-            height: 'auto',
             paddingHorizontal: 16,
         }
     })
 
+    const content = scroll ? (
+        <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+        >
+            {children}
+        </ScrollView>
+    ) : (
+        <View style={styles.view}>
+            {children}
+        </View>
+    )
+
     return (
         <SafeAreaView style={styles.screen}>
-            {props.scroll ? (
-                <ScrollView style={styles.scroll}>
-                    {props.children}
-                </ScrollView>
-            ) : (
-                <View style={styles.view}> 
-                    {props.children} 
-                </View>
-            )}
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 20}
+            >
+                <TouchableWithoutFeedback
+                    onPress={Keyboard.dismiss}
+                    accessible={false}
+                >
+                    <View style={{ flex: 1 }}>
+                        {content}
+                    </View>
+                </TouchableWithoutFeedback>
+            </KeyboardAvoidingView>
         </SafeAreaView>
     )
 }
