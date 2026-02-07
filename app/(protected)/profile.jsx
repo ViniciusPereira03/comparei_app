@@ -1,5 +1,5 @@
 import { Image, StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import * as ImagePicker from 'expo-image-picker'
 import Screen from '../../components/Screen'
 import Range from '../../components/Range'
@@ -10,6 +10,7 @@ import { router } from 'expo-router'
 import { getUser, putDistanceRadius, uploadProfilePhoto } from "../../services/users/user"
 import { useAuth } from '../../contexts/authContext'
 import {SERVICES_URL} from '../../services/api'
+import { useFocusEffect } from '@react-navigation/native'
 const BASE_URL = SERVICES_URL.USERS;
 
 const Profile = () => {
@@ -24,13 +25,21 @@ const Profile = () => {
     }
 
     const getProfile = async () => {
-        const response = await getUser(authState.id)
-        console.log(response)
-        const urlPhoto = `${BASE_URL}${response.photo}`
-        setPhoto(urlPhoto)
-        setProfile(response)
-
-        setLoad(true)
+        try {
+            const response = await getUser(authState.id)
+            const urlPhoto = `${BASE_URL}${response.photo}`
+            setPhoto(urlPhoto)
+            setProfile(response)
+    
+            setLoad(true)
+            
+        } catch (error) {
+            Alert.alert("Erro", "Não foi possível carregar o perfil do usuário", [
+                {text: "Ok", callbackOrButtons: router.back()}
+            ])
+            setLoad(false)
+        }
+        
     }
 
     useEffect(() => {
@@ -45,11 +54,19 @@ const Profile = () => {
         }
     }, [profile])
 
-    useEffect(() => {
-        if (authState?.id) {
-            getProfile()
-        }
-    }, [authState?.id])
+    useFocusEffect(
+        useCallback(() => {
+
+            if (authState?.id) {
+                getProfile()
+            }
+
+            return () => {
+                setProfile("");
+                setPhoto("");
+            }
+        }, [])
+    );
 
     const handleImagePicker = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
@@ -106,7 +123,7 @@ const Profile = () => {
     };
 
     return (
-        <Screen style={{ alignItems: 'center', justifyContent: 'center' }}>
+        <Screen style={{  justifyContent: 'center' }}>
             {load && (
                 <View style={{
                     width: '100%',
