@@ -125,3 +125,29 @@ export const getProductByBarcode = async (barcode: string): Promise<Produto | nu
     'GET'
   );
 }
+
+export const confirmProductValue = async (id_produto: number, id_mercado: number, preco: number): Promise<void> => {
+  return apiRequest<void>(
+    BASE_URL,
+    `/produto/confirmar`,
+    'POST',
+    {
+      id_produto,
+      id_mercado,
+      preco
+    }
+  );
+}
+
+export const updateProduct = async (produto_id: number, mercado_id: number, preco: number): Promise<void> => {
+  return apiRequest<void>(
+    BASE_URL,
+    `/produto`,
+    'PUT',
+    {
+      produto_id,
+      mercado_id,
+      preco
+    }
+  );
+}
