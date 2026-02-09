@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from 'react-native'
+import { Alert, StyleSheet, Text, View } from 'react-native'
 import React, { useCallback, useState } from 'react'
 import Screen from '../../components/Screen'
 import { router, useLocalSearchParams } from 'expo-router'
@@ -8,12 +8,12 @@ import BackButton from '../../components/BackButton.jsx'
 
 import ImageCreateList from '../../assets/images/createList/image_createList.js'
 import ShortButton from '../../components/ShortButton.jsx'
-import { postList } from '../../services/mock/lists/list.js'
 import { useFocusEffect } from '@react-navigation/native'
 import { useList } from '../../contexts/listContext'
+import { createList } from '../../services/lists/listas.tsx'
 
 const CreateList = () => {
-    const {listState} = useList();
+    const {listState, onOpen} = useList();
     const item = useLocalSearchParams();
     const [nomeLista, setNomeLista] = useState("");
 
@@ -31,21 +31,39 @@ const CreateList = () => {
     })
 
     const criarLista = async () => {
-        const response = await postList({
-            title: nomeLista,
-            ...item
-        })
-
-        router.replace({
-            pathname: '/list',
-            params: {
-                id: response.id
+        try {
+            if (nomeLista.trim() === "") {
+                Alert.alert("Atenção!", "Por favor, insira um nome para a lista.")
+                return;
             }
-        })
+
+            const lista = await createList(nomeLista)
+
+            console.log("Lista criada com sucesso:", lista);
+
+            onOpen(
+                lista.id,
+                lista.nome,
+                lista.created_at
+            )
+    
+            router.replace({
+                pathname: '/list',
+                params: {
+                    id: lista.id
+                }
+            })
+
+        } catch (error) {
+            Alert.alert('Erro', 'Ocorreu um erro ao criar a lista. Por favor, tente novamente.')
+            return;
+        }
+        
     }
 
     const verificaListaAberta = () => {
         if (listState.id) {
+
             router.replace({
                 pathname: '/list',
                 params: {
@@ -74,45 +92,59 @@ const CreateList = () => {
                 alignItems: 'center',
                 justifyContent: 'space-between',
             }}> 
+
                 <View style={{
                     width: '100%',
-                    flexDirection: 'row',
-                    justifyContent: 'flex-start',
-                    alignItems: 'center'
+                    height: "auto",
+                    alignItems: "center",
                 }}>
-                    <BackButton 
-                        accessibilityHint="Pressione para voltar"
-                        onPress={() => router.replace('/search')}
-                    />
-                    
-                    <Text style={styled.title}>Criar nova lista</Text>
+                    <View style={{
+                        width: '100%',
+                        flexDirection: 'row',
+                        justifyContent: 'flex-start',
+                        alignItems: 'center'
+                    }}>
+                        <BackButton 
+                            accessibilityHint="Pressione para voltar"
+                            onPress={() => router.replace('/search')}
+                        />
+                        
+                        <Text style={styled.title}>Criar nova lista</Text>
+                    </View>
+
+                    <View style={{width: '100%', paddingBottom: 80}}>
+                        <Input 
+                            type="text"
+                            label="Nome da lista"
+                            required={false}
+                            error={false}
+                            value={nomeLista}
+                            onChangeText={(e) => setNomeLista(e)}
+                        />
+                    </View>
+
+                    <View>
+                        <ImageCreateList width={204} height={112}/>
+                    </View>
+
+                </View>
+                
+                
+                <View style={{width: '100%' }}>
+                    <View style={{width: '100%', alignItems: 'flex-end'}}>
+                        <ShortButton 
+                            width="100%"
+                            backgroundColor={colors.turquoise}
+                            text="Avançar"
+                            accessibilityHint="Pressione para avançar!"
+                            type={'done'}
+                            onPress={() => criarLista()}
+                        />
+                    </View>
                 </View>
 
-                <View style={{width: '100%'}}>
-                    <Input 
-                        type="text"
-                        label="Nome da lista"
-                        required={false}
-                        error={false}
-                        value={nomeLista}
-                        onChangeText={(e) => setNomeLista(e)}
-                    />
-                </View>
 
-                <View>
-                    <ImageCreateList width={204} height={112}/>
-                </View>
 
-                <View style={{width: '100%', alignItems: 'flex-end'}}>
-                    <ShortButton 
-                        width="100%"
-                        backgroundColor={colors.turquoise}
-                        text="Avançar"
-                        accessibilityHint="Pressione para avançar!"
-                        type={'done'}
-                        onPress={() => criarLista()}
-                    />
-                </View>
             </View>
         </Screen>
     )
