@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useCallback, useState } from 'react'
 import Screen from '../../components/Screen'
 import ImageSearcdh from '../../assets/images/search/image_search.js'
@@ -17,6 +17,8 @@ import { format } from 'date-fns';
 import { searchProduct } from '../../services/products/promer.tsx'
 import { SERVICES_URL } from '../../services/api.tsx';
 import { useGps } from '../../contexts/gpsContext.tsx';
+import { addItemToLista } from '../../services/lists/listas.tsx'
+import { useList } from '../../contexts/listContext.tsx'
 
 
 
@@ -29,6 +31,7 @@ const Search = () => {
     const [items, setItems] = useState([])
     const BASE_URL_PROMER = SERVICES_URL.PROMER;
     const { location, refreshLocation, loading } = useGps();
+    const { listState } = useList()
     
     const styled = StyleSheet.create({
         price: {
@@ -39,13 +42,20 @@ const Search = () => {
         }
     })
 
-    const addList = (i) => {
-        router.replace({
-            pathname: '/createList',
-            params: {
-                ...i
-            }
-        })
+    const addList = async (i)  => {
+        try {
+            const response = await addItemToLista(listState.id, i.produto.id, i.mercado.id, 1, i.preco_unitario)
+        
+            console.log("ADICIONADO: ", response)
+            router.replace({
+                pathname: '/list',
+                params: {
+                    id: listState.id
+                }
+            })
+        } catch (error) {
+            Alert.alert("Erro", "Ocorreu um erro ao adicinoar item na lista de compras.")
+        }
     };
 
     const pesquisar = async () => {
@@ -98,14 +108,14 @@ const Search = () => {
                 height: '100%',
                 marginVertical: 'auto',
                 alignItems: 'center',
-                justifyContent: 'center',
+                justifyContent: 'flex-start',
                 paddingBottom: 88,
             }}> 
                 <View style={{
                     width: '100%',
                     flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
+                    justifyContent: 'flex-start',
+                    alignItems: 'center',
                 }}>
                     <BackButton 
                         accessibilityHint="Pressione para voltar"
@@ -171,7 +181,7 @@ const Search = () => {
                                         }}>
                                             <Badge text={i.mercado.nome} backgroundColor={colors.hookers_green}/>
                                             <Text>{i.produto.nome}</Text>
-                                            <Text style={styled.price}>R$ {i.preco_unitario}</Text>
+                                            <Text style={styled.price}>R$ {i.preco_unitario.toFixed(2)}</Text>
                                         </View>
         
                                         <ProgressBar percentage={i.nivel_confianca}/>
