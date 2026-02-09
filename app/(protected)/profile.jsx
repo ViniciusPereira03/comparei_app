@@ -3,12 +3,14 @@ import React, { useCallback, useEffect, useState } from 'react'
 import * as ImagePicker from 'expo-image-picker'
 import Screen from '../../components/Screen'
 import Range from '../../components/Range'
+import Button from '../../components/Button'
 import { colors } from '../../assets/colors/global'
 import BackButton from '../../components/BackButton'
 import { router } from 'expo-router'
 // import { getUser, putDistanceRadius, uploadProfilePhoto } from '../../services/mock/users/user' // Adicione uploadProfilePhoto
 import { getUser, putDistanceRadius, uploadProfilePhoto } from "../../services/users/user"
 import { useAuth } from '../../contexts/authContext'
+import { useList } from '../../contexts/listContext'
 import {SERVICES_URL} from '../../services/api'
 import { useFocusEffect } from '@react-navigation/native'
 const BASE_URL = SERVICES_URL.USERS;
@@ -18,7 +20,9 @@ const Profile = () => {
     const [medal, setMedal] = useState('bronze')
     const [load, setLoad] = useState(false)
     const [photo, setPhoto] = useState('')
-    const { authState } = useAuth();
+    const { authState, onLogout } = useAuth();
+    const { onClose } = useList();
+    
 
     const updateDistanceRadius = async (e) => {
         await putDistanceRadius(e, authState.id)
@@ -122,6 +126,11 @@ const Profile = () => {
         }
     };
 
+    const logout = () => {
+        onClose()
+        onLogout()
+    }
+
     return (
         <Screen style={{  justifyContent: 'center' }}>
             {load && (
@@ -166,6 +175,16 @@ const Profile = () => {
                                 width={'100%'}
                             />
                         </View>
+
+                        <Button 
+                            width='auto'
+                            backgroundColor={colors.scarlet}
+                            outline
+                            text="Logout"
+                            accessibilityHint="Pressione para criar uma lista!"
+                            type="error"
+                            onPress={() => logout()}
+                        />
                     </View>
                 </View>
             )}
