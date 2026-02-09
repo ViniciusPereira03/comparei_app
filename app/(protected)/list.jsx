@@ -1,5 +1,5 @@
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useCallback, useState } from 'react'
+import { Image, StyleSheet, Text, View, FlatList, Alert } from 'react-native'
+import React, { useCallback, useState, useEffect } from 'react'
 import Screen from '../../components/Screen.jsx'
 import { router, useLocalSearchParams } from 'expo-router'
 import { colors } from '../../assets/colors/global.jsx'
@@ -8,159 +8,211 @@ import Button from '../../components/Button.jsx'
 import Card from '../../components/Card.jsx'
 import Badge from '../../components/Badge.jsx'
 import ProgressBar from '../../components/ProgressBar.jsx'
-import { format } from 'date-fns';
-import { getListProducts, removeItem } from '../../services/mock/lists/list.js'
+import { format } from 'date-fns'
 import { useFocusEffect } from '@react-navigation/native'
-import * as Location from 'expo-location';
-import { confirmProductValue } from '../../services/mock/products/product.js'
-
-
+import * as Location from 'expo-location'
+import { confirmProductValue, getProductByMarket } from '../../services/products/promer.tsx'
+import { getListaById, removeItemToList, checkItem } from '../../services/lists/listas.tsx'
+import ListNoItems from '../../assets/images/list/list_no_items.js'
+import { SERVICES_URL } from '../../services/api.tsx';
 
 const List = () => {
-    const params = useLocalSearchParams();
-    const [location, setLocation] = useState(null);
-    const [showListType, setShowListType] = useState(1);
-    const [items, setItems] = useState([]);
-    const [listId, setListId] = useState(0);
-    const [listName, setListName] = useState('')
+    const params = useLocalSearchParams()
 
-    const confirmarValor = async (product) => {
-        await confirmProductValue({
-            ...product,
-            location
-        })
+    const [showListType, setShowListType] = useState(1)
+    const [items, setItems] = useState([])
+    const [listId, setListId] = useState(0)
+    const [listName, setListName] = useState('')
+    const [loading, setLoading] = useState(true)
+    const BASE_URL_PROMER = SERVICES_URL.PROMER;
+
+    const confirmarValor = async (data) => {
+        try {
+            await Promise.all([
+                confirmProductValue(data.product_id, data.market_id, data.price),
+                checkItem(data.item_id, true)
+            ])
+
+            loadList()
+        } catch (error) {
+            // console.error("Erro ao confirmar valor:", error)
+            console.log(error)
+            Alert.alert("Erro", "Occoreu um erro ao confirmar o valor do produto")
+        }
     }
 
     const editarValor = (payload) => {
         router.push({
             pathname: '/editProduct',
-            params: { 
+            params: {
                 product_id: payload.product_id,
                 market_id: payload.market_id
             }
         })
     }
 
-    const removerItemDaLista = async (payload) => {
-        console.log("Remover item da lista: ", payload)
-        const newList = await removeItem(payload)
-        setItems(newList.products)
+    const removerItemDaLista = async (itemID) => {
+        try {
+            await removeItemToList(itemID)
+            loadList()
+        } catch (error) {
+            console.log(error)
+            Alert.alert("Erro", "Ocorreu um erro ao remover item da lista de compras")
+        }
     }
 
     const loadList = async () => {
-        console.log(params.id)
-        if (params.id) {
-            const response = await getListProducts(params.id)
-            setListId(response.id)
-            setListName(response.name)
-            setItems(response.products)
-        }
-    }
+        try {
+            if (params.id) {
+                const response = await getListaById(params.id)
 
-    async function getCurrentLocation() {
-              
-        let { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') {
-        alert('Permission to access location was denied');
-        return;
+                setListId(response.id)
+                setListName(response.nome)
+                setItems(response.itens ?? [])
+            }
+        } catch (error) {
+            console.error(error)
+        } finally {
+            setLoading(false)
         }
-
-        let location = await Location.getCurrentPositionAsync({});
-        setLocation(location);
     }
 
     useFocusEffect(
         useCallback(() => {
-            loadList();
-            getCurrentLocation();
+            loadList()
 
             return () => {
                 setItems([])
-                setLocation(null)
-                setShowListType(1);
+                setShowListType(1)
             }
         }, [params.id])
-    );
+    )
 
-    const CardItem = ({ item, onEdit, onConfirm, onRemove }) => {
+    // ============================
+    // CARD ITEM CORRETO
+    // ============================
+
+    const CardItem = ({ item }) => {
+        const [data, setData] = useState(null)
+        const [loadingItem, setLoadingItem] = useState(true)
+
+        useEffect(() => {
+            const fetchData = async () => {
+                try {
+                    const response = await getProductByMarket(
+                        item.produto_id,
+                        item.mercado_id
+                    )
+                    setData(response)
+                } catch (error) {
+                    console.error(error)
+                } finally {
+                    setLoadingItem(false)
+                }
+            }
+
+            fetchData()
+        }, [item.produto_id, item.mercado_id])
+
+        if (loadingItem) {
+            return (
+                <Card width="100%">
+                    <Text>Carregando item...</Text>
+                </Card>
+            )
+        }
+
+        if (!data) return null
+
         return (
-            <Card 
-                key={item.id} 
+            <Card
                 width="100%"
                 style={{
                     justifyContent: 'flex-start',
                     alignItems: 'flex-start',
                 }}
             >
-                <View style={{
-                    flexDirection: 'row',
-                    justifyContent: 'flex-start',
-                    alignItems: 'flex-start'
-                }}>
-                    <Image source={{uri: item.image}} width={136} height={136}/>
-                    
-                    <View style={{
-                        width: "55%",
-                        alignItems: 'flex-start'
-                    }}>
-                        <Badge text={item.market} backgroundColor={colors.hookers_green}/>
-                        <Text>{item.product}</Text>
-                        <Text style={styled.price}>R$ {`${item.price}`.replace('.', ',')}</Text>
-                        <ProgressBar percentage={item.confidence}/>
-                        <Text style={styled.update}>Atualizado em: {format(new Date(item.updatedAt), "dd/MM/yyyy")}</Text>
+                <View style={{ width:"100%", flexDirection: 'row', justifyContent: "space-between" }}>
+                    <Image
+                        source={{
+                            uri: `${BASE_URL_PROMER}/produto/image/${data.produto.bar_code}`
+                        }}
+                        style={{ width: 136, height: 136 }}
+                    />
+
+                    <View style={{ width: "55%" }}>
+                        <Badge
+                            text={data.mercado.nome}
+                            backgroundColor={colors.hookers_green}
+                        />
+
+                        <Text>{data.produto.nome}</Text>
+
+                        <Text style={styles.price}>
+                            R$ {`${data.preco_unitario.toFixed(2)}`.replace('.', ',')}
+                        </Text>
+
+                        <ProgressBar percentage={data.nivel_confianca} />
+
+                        <Text style={styles.update}>
+                            Atualizado em: {format(new Date(data.modified_at), "dd/MM/yyyy")}
+                        </Text>
                     </View>
                 </View>
-                
-                {!item.confirmed && (
+
+                {!item.checked && (
                     <View style={{
                         width: '100%',
                         flexDirection: 'row',
                         justifyContent: 'space-between',
                     }}>
-                        <Button 
+                        <Button
                             type='edit'
                             backgroundColor={colors.turquoise}
-                            width='45%'
+                            width='49%'
                             text='editar valor'
-                            onPress={() => onEdit({
-                                product_id: item.product_id,
-                                market_id: item.market_id
+                            onPress={() => editarValor({
+                                product_id: data.produto.id,
+                                market_id: data.mercado.id
                             })}
                             marginTop={8}
                         />
 
-                        <Button 
+                        <Button
                             type='success'
                             backgroundColor={colors.turquoise}
-                            width='45%'
+                            width='49%'
                             text='confirmar valor'
-                            onPress={() => onConfirm({
-                                product_id: item.product_id,
-                                market_id: item.market_id,
-                                price: item.price
+                            onPress={() => confirmarValor({
+                                product_id: data.produto.id,
+                                market_id: data.mercado.id,
+                                price: data.preco_unitario,
+                                item_id: item.id
                             })}
                             marginTop={8}
                         />
                     </View>
                 )}
 
-                <Button 
+                <Button
                     type='error'
                     backgroundColor={colors.scarlet}
                     width='100%'
                     text='Remover da lista'
-                    onPress={() => onRemove({
-                        list_id: listId,
-                        product_id: item.product_id,
-                        market_id: item.market_id
-                    })}
+                    onPress={() => removerItemDaLista(item.id)}
                     marginTop={8}
                 />
             </Card>
         )
     }
 
-    const styled = StyleSheet.create({
+    const filteredItems = items.filter(item =>
+        showListType === 1
+            ? !item.checked
+            : item.checked
+    )
+
+    const styles = StyleSheet.create({
         title: {
             color: colors.hookers_green,
             fontSize: 24,
@@ -174,74 +226,80 @@ const List = () => {
     })
 
     return (
-        <Screen scroll>
+        <Screen scroll={false}>
             <View style={{
-                height: '100%',
-                marginVertical: 'auto',
-                alignItems: 'center',
-                justifyContent: 'space-between',
+                flex: 1,
                 paddingBottom: 88,
-            }}> 
+            }}>
                 <View style={{
-                    width: '100%',
                     flexDirection: 'row',
-                    justifyContent: 'flex-start',
                     alignItems: 'center'
                 }}>
-                    <BackButton 
+                    <BackButton
                         accessibilityHint="Pressione para voltar"
                         onPress={() => router.replace('/search')}
                     />
-                    
-                    <Text style={styled.title}>{listName}</Text>
+
+                    <Text style={styles.title}>{listName}</Text>
                 </View>
 
-                <View style={{
-                    width: '100%',
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: 8,
-                }}>
-                    <Button 
-                        backgroundColor={colors.turquoise}
-                        width='45%'
-                        text='pendentes'
-                        onPress={() => setShowListType(1)}
-                        marginTop={8}
-                        outline={showListType === 1 ? false : true}
-                    />
+                {loading ? (
+                    <Text>Carregando lista...</Text>
+                ) : filteredItems.length > 0 ? (
+                    <>
+                        <View style={{
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                            marginBottom: 8,
+                        }}>
+                            <Button
+                                backgroundColor={colors.turquoise}
+                                width='45%'
+                                text='pendentes'
+                                onPress={() => setShowListType(1)}
+                                outline={showListType !== 1}
+                            />
 
-                    <Button 
-                        backgroundColor={colors.turquoise}
-                        width='45%'
-                        text='confirmados'
-                        onPress={() => setShowListType(2)}
-                        marginTop={8}
-                        outline={showListType === 2 ? false : true}
-                    />
-                </View>
+                            <Button
+                                backgroundColor={colors.turquoise}
+                                width='45%'
+                                text='confirmados'
+                                onPress={() => setShowListType(2)}
+                                outline={showListType !== 2}
+                            />
+                        </View>
 
-                {items.map((i, index) => (
-                    showListType === 1 && !i.confirmed ? (
-                        <CardItem 
-                            key={index}
-                            item={i}
-                            onEdit={(data) => editarValor(data)}
-                            onConfirm={(data) => confirmarValor(data)}
-                            onRemove={(data) => removerItemDaLista(data)}
+                        <FlatList
+                            data={filteredItems}
+                            keyExtractor={(item) =>
+                                `${item.produto_id}-${item.mercado_id}`
+                            }
+                            renderItem={({ item }) => (
+                                <CardItem item={item} />
+                            )}
                         />
-                    ) : showListType === 2 && i.confirmed ? (
-                        <CardItem 
-                            key={index}
-                            item={i}
-                            onEdit={(data) => editarValor(data)}
-                            onConfirm={(data) => confirmarValor(data)}
-                            onRemove={(data) => removerItemDaLista(data)}
+                    </>
+                ) : (
+                    <View style={{
+                        flex: 1,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}>
+                        <ListNoItems
+                            width={160}
+                            height={149.11}
                         />
-                    ) : null
-                ))}
-                
+
+                        <Text>Nenhum item foi adicionado à lista</Text>
+
+                        <Button
+                            backgroundColor={colors.turquoise}
+                            text="Adicionar item"
+                            type="add"
+                            onPress={() => router.replace('/search')}
+                        />
+                    </View>
+                )}
             </View>
         </Screen>
     )

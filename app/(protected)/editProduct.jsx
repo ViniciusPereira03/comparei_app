@@ -8,7 +8,7 @@ import Input from '../../components/Input'
 import BackButton from '../../components/BackButton'
 import { useAuth } from '../../contexts/authContext'
 import { useFocusEffect } from '@react-navigation/native'
-import { getProductById, updateProduct } from '../../services/products/promer.tsx'
+import { getProductByMarket, updateProduct } from '../../services/products/promer.tsx'
 
 const EditProduct = () => {
     const { authState } = useAuth();
@@ -23,14 +23,12 @@ const EditProduct = () => {
     })
 
     const salvar = async () => {
-        const produto = {
-            product_id: params.product_id,
-            market_id: params.market_id,
-            price: parseFloat(`${preco}`.replace(',', '.')).toFixed(2),
-        }
+            const product_id = parseInt(params.product_id)
+            const market_id = parseInt(params.market_id)
+            const price = parseFloat(parseFloat(`${preco}`.replace(',', '.')).toFixed(2))
 
         try {
-            const update = await updateProduct(produto)
+            const update = await updateProduct(product_id, market_id, price)
             console.log("update: ", update)
     
             router.replace('/home')
@@ -42,12 +40,13 @@ const EditProduct = () => {
     }
 
     const loadProduct = async (params) => {
+        console.log("PARAMS: ", params)
         if (params.product_id && params.market_id) {
             try {
-                const product = await getProductById({
-                    product_id: params.product_id,
-                    market_id: params.market_id
-                })
+                const productID = parseInt(params.product_id)
+                const marketID = parseInt(params.market_id)
+
+                const product = await getProductByMarket(productID, marketID)
                 setPreco(`${product.preco_unitario}`)
             } catch (error) {
                 console.error("Erro ao carregar produto:", error)
@@ -61,7 +60,7 @@ const EditProduct = () => {
 
     useFocusEffect(
         useCallback(() => {
-            // loadProduct(params);
+            loadProduct(params);
 
             return () => {
                 setPreco("");
@@ -96,7 +95,7 @@ const EditProduct = () => {
                     type="numeric"
                     label="Preço do produto"
                     error={false}
-                    value={preco}
+                    value={`${preco}`.replace(".", ",")}
                     onChangeText={(e) => setPreco(e)}
                 />
 
