@@ -5,11 +5,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 interface ListProps {
     listState: {
         open: boolean | null; 
-        id: string | null;
+        id: number | null;
         name: string | null;
         created: string | null;
     };
-    onOpen: (id: string, name: string, created: string) => void;
+    onOpen: (id: number, name: string, created: string) => void;
     onClose: () => void;
 }
 
@@ -22,7 +22,7 @@ export const useList = () => {
 export const ListProvider = ({ children }: any) => {
     const [listState, setListState] = useState<{
         open: boolean | null;
-        id: string | null;
+        id: number | null;
         name: string | null;
         created: string | null;
     }>({
@@ -34,7 +34,7 @@ export const ListProvider = ({ children }: any) => {
 
     const saveListState = async (state: { 
         open: boolean; 
-        id: string | null; 
+        id: number | null; 
         name: string | null; 
         created: string | null 
     }) => {
@@ -77,7 +77,7 @@ export const ListProvider = ({ children }: any) => {
         }
     };
 
-    const open = async (id: string, name: string, created: string) => {
+    const open = async (id: number, name: string, created: string) => {
             const newState = { open: true, id, name, created };
             setListState(newState);
             await saveListState(newState);
