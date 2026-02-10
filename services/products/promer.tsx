@@ -151,3 +151,11 @@ export const updateProduct = async (produto_id: number, mercado_id: number, prec
     }
   );
 }
+
+export const getProductByMarket = async (produto_id: number, mercado_id: number): Promise<MercadoProduto | null> => {
+  return apiRequest<MercadoProduto | null>(
+    BASE_URL,
+    `/produto/${produto_id}/${mercado_id}`,
+    'GET'
+  );
+}
