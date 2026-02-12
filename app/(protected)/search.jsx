@@ -89,6 +89,12 @@ const Search = () => {
         if (params.product) {
             setItems(params.product ? JSON.parse(params.product) : []);
         }
+
+        if (params.search) {
+            setSearch(params.search)
+        } else {
+            setSearch("")
+        }
     } 
 
     useFocusEffect(
