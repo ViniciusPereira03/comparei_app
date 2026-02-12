@@ -197,19 +197,6 @@ const CreateProduct = () => {
         salvar();
     }, [barCode])
     
-    const loadParams = () => {
-        if (params.product) {
-            const product_info = JSON.parse(params.product)
-            const p = product_info
-
-            setNomeProduto(p.nome);
-            setMarcaProduto(p.marca);
-            setQuantidade(`${p.quantidade}`);
-            setUnidade(p.unidade);
-            setPreco(`${p.preco}`.replaceAll('.', ','));
-            setFoto(p.foto);
-        }
-    }
 
     const criarMercadoManual = async () => {
         if (!location) return;
@@ -242,8 +229,6 @@ const CreateProduct = () => {
 
     useFocusEffect(
         useCallback(() => {
-            loadParams();
-
             return () => {
                 setStep(1);
                 setNomeProduto("");
@@ -253,9 +238,23 @@ const CreateProduct = () => {
                 setPreco("");
                 setBarCode("");
                 setFoto("");
-            }
-        }, [params.product_info])
+            };
+        }, [])
     );
+
+    useEffect(() => {
+        if (!params.product) return;
+
+        const p = JSON.parse(params.product);
+
+        setNomeProduto(p.nome || "");
+        setMarcaProduto(p.marca || "");
+        setQuantidade(p.quantidade ? String(p.quantidade) : "");
+        setUnidade(p.unidade || "");
+        setPreco(p.preco ? String(p.preco).replaceAll('.', ',') : "");
+        setFoto(p.foto || "");
+
+    }, [params.key]);
 
     useEffect(() => {
         if (permission) {

@@ -8,6 +8,7 @@ import BackButton from '../../components/BackButton';
 import { getProductByBarcode, validaImage } from '../../services/products/promer';
 import { useList } from '../../contexts/listContext';
 import { useGps } from '../../contexts/gpsContext.tsx';
+import { searchProduct } from '../../services/products/promer.tsx'
 
 const CameraSearch = () => {
     const {listState} = useList();
@@ -47,8 +48,6 @@ const CameraSearch = () => {
             const base64WithPrefix = `data:image/jpeg;base64,${newPhoto.base64}`;
             const response = await validaImage(base64WithPrefix);
     
-            console.log("Resposta do reconhecimento de imagem:", response);
-    
             await refreshLocation();
             
             if (!location) {
@@ -59,23 +58,53 @@ const CameraSearch = () => {
                 return;
             }
     
+            let textoFiltro = ""
+            const keys = response.nome.split(" ");
+            if (keys.length > 4) {
+                textoFiltro = `${keys[0]} ${keys[1]} ${keys[2]} ${keys[3]}`
+            } else {
+                textoFiltro = response.nome
+            }
+
             const filtro = {
-                texto: response.nome,
+                texto: textoFiltro,
                 ordem: "",
                 categoria: ""
             }
-    
+
             try {
                 const responseProduct = await searchProduct(filtro, location)
-    
-                console.log("Produtos encontrados:", responseProduct);
+
+                if (!responseProduct || responseProduct.length === 0) {
+                    // Produto não encontrado, cadastrar produto
+                    response.foto = base64WithPrefix;
+                    router.push({
+                        pathname: '/createProduct',
+                        params: { 
+                            product: JSON.stringify(response),
+                            key: Date.now().toString()
+                        }
+                    })
+                    return;
+                }
+
+                router.push({
+                    pathname: '/search',
+                    params: { 
+                        product: JSON.stringify(responseProduct),
+                        key: Date.now().toString(),
+                        search: filtro.texto,
+                    }
+                })
             } catch (error) {
-                console.log("Erro ao buscar produtos:", error);
-                
                 response.foto = base64WithPrefix;
-                router.replace({ pathname: '/createProduct', params: {
-                    product: JSON.stringify(response)
-                } })
+                router.push({
+                    pathname: '/createProduct',
+                    params: { 
+                        product: JSON.stringify(response),
+                        key: Date.now().toString()
+                    }
+                })
             }
         } catch (error) {
             console.log("Erro ao tirar ou processar a foto:", error);
