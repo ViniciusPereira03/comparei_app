@@ -24,6 +24,7 @@ const List = () => {
     const [listId, setListId] = useState(0)
     const [listName, setListName] = useState('')
     const [loading, setLoading] = useState(true)
+    const [showButtons, setShowButtons] = useState(false)
     const BASE_URL_PROMER = SERVICES_URL.PROMER;
 
     const confirmarValor = async (data) => {
@@ -69,6 +70,12 @@ const List = () => {
                 setListId(response.id)
                 setListName(response.nome)
                 setItems(response.itens ?? [])
+                
+                if (response.itens !== null) {
+                    if (response.itens.length > 0) {
+                        setShowButtons(true)
+                    }
+                }
             }
         } catch (error) {
             console.error(error)
@@ -226,7 +233,9 @@ const List = () => {
     })
 
     return (
-        <Screen scroll={false}>
+        <Screen 
+            // scroll={false}
+        >
             <View style={{
                 flex: 1,
                 paddingBottom: 88,
@@ -243,31 +252,34 @@ const List = () => {
                     <Text style={styles.title}>{listName}</Text>
                 </View>
 
+                {!loading && showButtons ? (
+                    <View style={{
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        marginBottom: 8,
+                    }}>
+                        <Button
+                            backgroundColor={colors.turquoise}
+                            width='45%'
+                            text='pendentes'
+                            onPress={() => setShowListType(1)}
+                            outline={showListType !== 1}
+                        />
+
+                        <Button
+                            backgroundColor={colors.turquoise}
+                            width='45%'
+                            text='confirmados'
+                            onPress={() => setShowListType(2)}
+                            outline={showListType !== 2}
+                        />
+                    </View>
+                ) : (<></>)}
+
                 {loading ? (
                     <Text>Carregando lista...</Text>
                 ) : filteredItems.length > 0 ? (
                     <>
-                        <View style={{
-                            flexDirection: 'row',
-                            justifyContent: 'space-between',
-                            marginBottom: 8,
-                        }}>
-                            <Button
-                                backgroundColor={colors.turquoise}
-                                width='45%'
-                                text='pendentes'
-                                onPress={() => setShowListType(1)}
-                                outline={showListType !== 1}
-                            />
-
-                            <Button
-                                backgroundColor={colors.turquoise}
-                                width='45%'
-                                text='confirmados'
-                                onPress={() => setShowListType(2)}
-                                outline={showListType !== 2}
-                            />
-                        </View>
 
                         <FlatList
                             data={filteredItems}
