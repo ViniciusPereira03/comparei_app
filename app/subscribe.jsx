@@ -64,6 +64,25 @@ const Subscribe = () => {
         onLogin(username, password)
     }
 
+    const backToLogin = () => {
+        setStep(0)
+        setName("")
+        setErroName(false)
+        setUsername("")
+        setErroUsername(false)
+        setEmail("")
+        setErroEmail(false)
+        setPassword("")
+        setErroPassword(false)
+        setRepeatPassword("")
+        setErroRepeatPassword(false)
+
+        router.replace({
+            pathname: '/',
+            params: {}
+        })
+    }
+
     useEffect(() => {
         switch (step) {
             case 1:
@@ -93,10 +112,7 @@ const Subscribe = () => {
                 <View>
                     <BackButton 
                         accessibilityHint="Pressione para voltar"
-                        onPress={() => {
-                            setStep(0)
-                            router.back()
-                        }}
+                        onPress={() => backToLogin()}
                     />
 
                     <View style={{marginTop: "30%"}}>

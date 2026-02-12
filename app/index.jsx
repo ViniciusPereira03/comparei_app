@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Text, TouchableOpacity } from 'react-native'
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useState } from 'react'
 import Screen from '../components/Screen'
 import Button from '../components/Button';
@@ -35,39 +35,57 @@ const Login = () => {
     return (
         <Screen
             style={{
-                alignItems: 'center',
-                justifyContent: 'center'
+                justifyContent: 'flex-start',
             }}
-        >
-            <Image source={logo} style={{ width: 87, height: 80, margin: 'auto'}} />
+        > 
+            <View style={{
+                width: '100%',
+                height: '100%',
+                alignItems: 'center',
+                justifyContent: 'center',
 
-            <Input
-                type="text"
-                label="Username"
-                error={false}
-                value={username}
-                onChangeText={(e) => setUsername(e)}
-            />
+            }}>
+                <Image source={logo} style={{ 
+                    width: 87, 
+                    height: 80, 
+                    marginBottom: '10%',
+                }} />
 
-            <Input
-                type="password"
-                label="Senha"
-                value={password}
-                onChangeText={(e) => setPassword(e)}
-            />
+                <View 
+                    style={{
+                        width: '100%'
+                    }}
+                >
+                    <Input
+                        type="text"
+                        label="Username"
+                        error={false}
+                        value={username}
+                        onChangeText={(e) => setUsername(e)}
+                    />
 
-            <Button 
-                width="100%"
-                backgroundColor={colors.turquoise}
-                text="Entrar"
-                accessibilityHint="Pressione para fazer login!"
-                type=""
-                onPress={() => handleLogin()}
-            />
+                    <Input
+                        type="password"
+                        label="Senha"
+                        value={password}
+                        onChangeText={(e) => setPassword(e)}
+                    />
 
-            <TouchableOpacity onPress={() => redirectToSubscribe()}>
-                <Text style={styles.link}>Não tenho cadastro</Text>
-            </TouchableOpacity>
+                    <Button 
+                        width="100%"
+                        backgroundColor={colors.turquoise}
+                        text="Entrar"
+                        accessibilityHint="Pressione para fazer login!"
+                        type=""
+                        onPress={() => handleLogin()}
+                    />
+
+                    <TouchableOpacity onPress={() => redirectToSubscribe()}>
+                        <Text style={styles.link}>Não tenho cadastro</Text>
+                    </TouchableOpacity>
+
+                </View>
+            </View>
         </Screen>
     )
 }
