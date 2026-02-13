@@ -125,7 +125,7 @@ const CameraSearch = () => {
         try {
             const response = await getProductByBarcode(barcode)
     
-            router.replace({ pathname: '/search', params: {
+            router.push({ pathname: '/search', params: {
                 product: JSON.stringify(response)
             } })
 
