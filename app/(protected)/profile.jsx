@@ -31,8 +31,14 @@ const Profile = () => {
     const getProfile = async () => {
         try {
             const response = await getUser(authState.id)
-            const urlPhoto = `${BASE_URL}${response.photo}`
-            setPhoto(urlPhoto)
+            if (response.photo) {
+                const urlPhoto = { uri: `${BASE_URL}${response.photo}`}
+                setPhoto(urlPhoto)
+            } else {
+                const urlPhoto = require(`../../assets/images/profile/default_profile.png`)
+                setPhoto(urlPhoto)
+            }
+            
             setProfile(response)
     
             setLoad(true)
@@ -149,7 +155,7 @@ const Profile = () => {
                             <TouchableOpacity onPress={handleImagePicker}>
                                 {photo && (
                                     <Image
-                                        source={{ uri: photo }}
+                                        source={photo}
                                         style={styled.profileImage}
                                     />
                                 )}
