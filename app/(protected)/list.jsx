@@ -308,7 +308,7 @@ const List = () => {
                             backgroundColor={colors.turquoise}
                             text="Adicionar item"
                             type="add"
-                            onPress={() => router.replace('/search')}
+                            onPress={() => router.push('/search')}
                         />
                     </View>
                 )}
