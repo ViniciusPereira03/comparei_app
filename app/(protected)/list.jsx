@@ -246,7 +246,7 @@ const List = () => {
                 }}>
                     <BackButton
                         accessibilityHint="Pressione para voltar"
-                        onPress={() => router.replace('/search')}
+                        onPress={() => router.back()}
                     />
 
                     <Text style={styles.title}>{listName}</Text>
