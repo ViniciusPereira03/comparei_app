@@ -76,9 +76,14 @@ const Search = () => {
 
             try {
                 const response = await searchProduct(filtro, location)
-                setItems(response)
+                if (response.length > 0) {
+                    setItems(response)
+                } else {
+                    Alert.alert("Sem Resultados...", "Nenhum resultado foi encontrado para sua pesquisa.")
+                }
             } catch (error) {
-                console.log("Erro ao buscar produtos:", error);
+                Alert.alert("Sem Resultados...", "Nenhum resultado foi encontrado para sua pesquisa.")
+                setItems([])
             }
         } else {
             setItems([])
