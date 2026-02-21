@@ -73,3 +73,11 @@ export const checkItem = async (
 export const removeItemToList = async (itemID: number) => {
     return apiRequest(BASE_URL, `/listas/${itemID}/itens`, 'DELETE');
 }
+
+export const fecharLista = async (
+    listId: number
+) => {
+    const endpoint = `/listas/${listId}/finalizar`;
+    const body = {};
+    return apiRequest(BASE_URL, endpoint, 'PUT', body);
+};

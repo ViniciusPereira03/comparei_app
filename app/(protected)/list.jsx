@@ -10,14 +10,15 @@ import Badge from '../../components/Badge.jsx'
 import ProgressBar from '../../components/ProgressBar.jsx'
 import { format } from 'date-fns'
 import { useFocusEffect } from '@react-navigation/native'
-import * as Location from 'expo-location'
 import { confirmProductValue, getProductByMarket } from '../../services/products/promer.tsx'
-import { getListaById, removeItemToList, checkItem } from '../../services/lists/listas.tsx'
+import { getListaById, removeItemToList, checkItem, fecharLista } from '../../services/lists/listas.tsx'
 import ListNoItems from '../../assets/images/list/list_no_items.js'
 import { SERVICES_URL } from '../../services/api.tsx';
+import { useList } from '../../contexts/listContext';
 
 const List = () => {
     const params = useLocalSearchParams()
+    const {listState, onClose} = useList();
 
     const [showListType, setShowListType] = useState(1)
     const [items, setItems] = useState([])
@@ -25,6 +26,7 @@ const List = () => {
     const [listName, setListName] = useState('')
     const [loading, setLoading] = useState(true)
     const [showButtons, setShowButtons] = useState(false)
+    const [allCheck, setAllCheck] = useState(false)
     const BASE_URL_PROMER = SERVICES_URL.PROMER;
 
     const confirmarValor = async (data) => {
@@ -84,6 +86,37 @@ const List = () => {
         }
     }
 
+    const fecharListaAtual = () => {
+        Alert.alert(
+            "Fechar lista",
+            "Tem certeza que deseja fechar esta lista?",
+            [
+                { text: "Cancelar", style: "cancel" },
+                { text: "Confirmar", onPress: () => confirmarFechamento() }
+            ]
+        )
+    }
+
+    const confirmarFechamento = async () => {
+        try {
+            await fecharLista(listState.id)
+            onClose()
+
+            router.push({
+                pathname: '/home',
+                params: {}
+            })
+            
+        } catch (error) {
+            Alert.alert(
+                "Erro",
+                "Ocorreu um erro ao fechar a lista."
+            )
+        }
+
+
+    }
+
     useFocusEffect(
         useCallback(() => {
             loadList()
@@ -94,6 +127,17 @@ const List = () => {
             }
         }, [params.id])
     )
+
+    useEffect(() => {
+        if (items.length === 0) {
+            setAllCheck(false)
+            return
+        }
+
+        const todosCheckados = items.every(item => item.checked === true)
+        setAllCheck(todosCheckados)
+
+    }, [items])
 
     // ============================
     // CARD ITEM CORRETO
@@ -302,7 +346,12 @@ const List = () => {
                             height={149.11}
                         />
 
-                        <Text>Nenhum item foi adicionado à lista</Text>
+                        {items.length === 0 ? (
+                            <Text>Nenhum item foi adicionado à lista</Text>
+                        ) : (
+                            <Text>Nenhum item pendente encontrado</Text>
+                        )}
+
 
                         <Button
                             backgroundColor={colors.turquoise}
@@ -310,8 +359,22 @@ const List = () => {
                             type="add"
                             onPress={() => router.push('/search')}
                         />
+
+                        {allCheck && (
+                            <Button
+                                backgroundColor={colors.scarlet}
+                                outline
+                                text="Fechar lista"
+                                accessibilityHint="Pressione para fechar a lista atual!"
+                                type="error"
+                                onPress={fecharListaAtual}
+                                // margin='auto'
+                            />
+                        )}
                     </View>
                 )}
+
+                
             </View>
         </Screen>
     )
