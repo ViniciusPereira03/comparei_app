@@ -47,14 +47,14 @@ const Select = ({ label, required = false, options = [], value, onValueChange })
     </Animated.Text>
   );
 
-  const renderOption = ({ item }) => (
-    <TouchableOpacity
-      style={styles.option}
-      onPress={() => handleOptionSelect(item)}
-    >
-      <Text style={styles.optionText}>{item.label}</Text>
-    </TouchableOpacity>
-  );
+  // const renderOption = ({ item }) => (
+  //   <TouchableOpacity
+  //     style={styles.option}
+  //     onPress={() => handleOptionSelect(item)}
+  //   >
+  //     <Text style={styles.optionText}>{item.label}</Text>
+  //   </TouchableOpacity>
+  // );
 
   return (
     <View style={styles.container}>
@@ -86,7 +86,7 @@ const Select = ({ label, required = false, options = [], value, onValueChange })
             <TouchableOpacity
                 key={option.value}
                 style={styles.option}
-                onPress={() => handleSelect(option.value)}
+                onPress={() => handleOptionSelect(option)}
                 accessible={true}
                 accessibilityRole="menuitem"
             >

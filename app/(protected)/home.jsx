@@ -1,27 +1,82 @@
-import { Text, View } from 'react-native'
-import React, { useEffect, useState } from 'react'
+/**
+ * TODO:
+ * 1. Bug ao pesquisar produto por foto. Quando faço a primeira pesquisa OK, quando faço a segunda pesquisa os campos do produto ficam preenchidos com os dados da primeira pesquisa - OK
+ * 2. Bug ao confirmar todos os itens da lista, a visualização volta como se não houvesse item nenhum na lista. - OK
+ * 3. Ajuste na tela do usuário, inserir imagem default para quando usuário não possui imagem - OK
+ * 4. Adicionar mensagem de erro quando pesquisa por texto não retornar nenhum resultado - OK
+ * 5. Bug no botão de voltar na tela search, o erro acontece se abrir uma lista ativa, clicar em adicionar item e tentar voltar. - OK
+ * 6. A consulta de produto por código de barras está com erro (investigar) - OK
+ * 7. Ao clicar em voltar na tela da lista, sempre volta para a tela search, independente de qual foi a tela anterior. - OK
+ * 8. Criar função para "FINALIZAR" lista ativa.
+ * 9. Testar no Android
+ * 
+ */
+
+
+import { Text, TouchableOpacity, View } from 'react-native'
+import React, { useCallback, useState } from 'react'
 import Screen from '../../components/Screen'
 import Button from '../../components/Button'
 import { colors } from '../../assets/colors/global'
-import AnimatedModal from '../../components/Modal'
 import Card from '../../components/Card'
 import ImageHome from '../../assets/images/home/image_home.js'
-import { useAuth } from '../../contexts/authContext'
 import { router } from 'expo-router'
+import { getListas } from '../../services/lists/listas.tsx'
+import Badge from '../../components/Badge.jsx'
+import { useFocusEffect } from 'expo-router'
+import { useList } from '../../contexts/listContext'
+import { format } from 'date-fns'
 
 const Home = () => {
-    const { onLogout } = useAuth();
+    const { onOpen } = useList();
 
     const [lists, setLists] = useState([])
-    const [modalVisible, setModalVisible] = useState(false);
+    const status = {
+        ABERTA: "Em andamento",
+        FECHADA: "Fechada",
+        CANCELADA: "Cancelada"
+    }
+    const statusColor = {
+        ABERTA: colors.hookers_green,
+        FECHADA: colors.scarlet,
+        CANCELADA: colors.scarlet
+    }
 
-    useEffect(() => {
-        console.log("HOME AQUI")
-    }, [])
+    const getLists = async () => {
+        try {
+            const response = await getListas()
 
-    useEffect(() => {
-        console.log("lists: ", lists)
-    }, [lists])
+            if (response.length > 0) {
+                for (const l of response) {
+                    if (l.status === "ABERTA") {
+                        onOpen(l.id, l.nome, l.created_at);
+                        break;
+                    }
+                }
+    
+                setLists(response)
+            }
+        } catch (error) {
+            
+        }
+    }
+
+    const openList = (id) => {
+        router.push({
+            pathname: '/list',
+            params: { id }
+        })
+    }
+
+    useFocusEffect(
+        useCallback(() => {
+            getLists()
+            
+            return () => {
+                setLists([])
+            }
+        }, [])
+    );
 
     return (
         <Screen scroll>
@@ -29,29 +84,55 @@ const Home = () => {
                 height: '100%',
                 marginVertical: 'auto',
                 alignItems: 'center',
-                justifyContent: 'center',
+                justifyContent: 'flex-start',
             }}>
+
+                <View style={{
+                    width: '100%',
+                    paddingBottom: 16
+                }}>
+                    <Button 
+                        width='100%'
+                        backgroundColor={colors.turquoise}
+                        text="Criar lista"
+                        accessibilityHint="Pressione para criar uma lista!"
+                        type="add"
+                        onPress={() => router.replace({
+                            pathname: '/createList',
+                            params: {}
+                        })}
+                    />
+                </View>
+
                 {lists.length > 0 ? (
                     <View style={{width: '100%', paddingBottom: 100}}>
                         {lists.map((l, i) => (
                             <Card key={i}>
-                                <Text>Lista {i}</Text>
-                                <Text>Texto da lista: {l.value}</Text>
+                                <TouchableOpacity onPress={() => openList(l.id)}>
+                                    <View
+                                        style={{
+                                            width: '100%',
+                                            flexDirection: 'row',
+                                            alignItems: 'flex-start',
+                                            justifyContent: 'space-between',
+                                        }}
+                                    >
+                                        <Text style={{fontSize: 18, fontWeight: 'bold', paddingBottom: 16}}>{l.nome}</Text>
+
+                                        <Badge 
+                                            width
+                                            text={status[l.status]}
+                                            backgroundColor={statusColor[l.status]}
+                                            outline
+                                        />
+                                    </View>
+                                    <Text>Criada em:  {format(new Date(l.created_at), "dd/MM/yyyy HH:ii:ss")}</Text>
+
+                                </TouchableOpacity>
                             </Card>
                         ))}
 
-                        <Button 
-                            width='auto'
-                            backgroundColor={colors.scarlet}
-                            outline
-                            text="Logout"
-                            accessibilityHint="Pressione para criar uma lista!"
-                            type="error"
-                            onPress={() => {
-                                setLists([])
-                                onLogout()
-                            }}
-                        />
+                        
                     </View>
                 ) : (
                     <View style={{marginTop: "60%"}}>
@@ -68,111 +149,9 @@ const Home = () => {
                                 params: {}
                             })}
                         />
-                        <Button 
-                            width='auto'
-                            backgroundColor={colors.turquoise}
-                            text="c produto"
-                            accessibilityHint=""
-                            onPress={() => router.replace({
-                                pathname: '/createProduct',
-                                params: {}
-                            })}
-                        />
-                        <Button 
-                            width='auto'
-                            backgroundColor={colors.turquoise}
-                            text="e produto"
-                            accessibilityHint=""
-                            onPress={() => router.replace({
-                                pathname: '/editProduct',
-                                params: {}
-                            })}
-                        />
                     </View>
                 )}
             </View>
-
-            
-
-            {/* <Input
-                type="password"
-                label="Senha"
-                value={text}
-                onChangeText={(e) => setText(e)}
-            />
-
-            <Input
-                type="email"
-                label="E-mail"
-                required
-                error={false}
-                value={text}
-                onChangeText={(e) => setText(e)}
-            />
-            
-            <Input
-                type="text"
-                label="Texto qualquer"
-                required={false}
-                error={false}
-                value={text}
-                onChangeText={(e) => setText(e)}
-            />
-            
-            <Input
-                type="numeric"
-                label="Numérico"
-                required={false}
-                error={false}
-                value={text}
-                onChangeText={(e) => setText(e)}
-            />
-
-            <Card>
-                <Select
-                    label="Select"
-                    // required={true}
-                    options={[
-                        { value: "1", label: "Opção 1" },
-                        { value: "2", label: "Opção 2" },
-                        { value: "3", label: "Opção 3" },
-                        { value: "4", label: "Opção 4" },
-                        { value: "5", label: "Opção 5" },
-                        { value: "6", label: "Opção 6" },
-                    ]}
-                    value={""}
-                    onValueChange={(newValue) => console.log(newValue)}
-                />
-
-                <Range 
-                    min={0} 
-                    max={50} 
-                    initial={25} 
-                    step={1} 
-                    onChange={(e) => console.log(e)}
-                    unidade=" Km"
-                />
-
-                <ProgressBar percentage={46} />
-            </Card> */}
-
-            
-
-            
-
-            <AnimatedModal visible={modalVisible} onClose={() => setModalVisible(false)}>
-                <Text style={{ fontSize: 18, textAlign: 'center', marginBottom: 10 }}>Ordenar por</Text>
-                <Text style={{ fontSize: 18, textAlign: 'center', marginBottom: 10 }}>Ordenar por</Text>
-
-                <Button 
-                    backgroundColor={colors.scarlet}
-                    text="fechar"
-                    accessibilityHint="Pressione para testar o botão!"
-                    type="error"
-                    onPress={() => setModalVisible(false)}
-                />
-                
-            </AnimatedModal>
         </Screen>
     )
 }

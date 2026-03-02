@@ -1,21 +1,18 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import { Alert, StyleSheet, Text, View } from 'react-native'
+import React, { useCallback, useEffect, useState } from 'react'
 import Screen from '../../components/Screen'
 import Button from '../../components/Button'
-import { router } from 'expo-router'
+import { router, useLocalSearchParams } from 'expo-router'
 import { colors } from '../../assets/colors/global'
 import Input from '../../components/Input'
 import BackButton from '../../components/BackButton'
 import { useAuth } from '../../contexts/authContext'
-import * as Location from 'expo-location';
+import { useFocusEffect } from '@react-navigation/native'
+import { getProductByMarket, updateProduct } from '../../services/products/promer.tsx'
 
 const EditProduct = () => {
     const { authState } = useAuth();
-    const [location, setLocation] = useState(null);
-    const [nomeProduto, setNomeProduto] = useState("");
-    const [marcaProduto, setMarcaProduto] = useState("");
-    const [quantidade, setQuantidade] = useState("");
-    const [unidade, setUnidade] = useState("");
+    const params = useLocalSearchParams();
     const [preco, setPreco] = useState("")
 
     const styled = StyleSheet.create({
@@ -25,41 +22,54 @@ const EditProduct = () => {
         }
     })
 
-    const salvar = () => {
-        console.log("salvar produto")
+    const salvar = async () => {
+            const product_id = parseInt(params.product_id)
+            const market_id = parseInt(params.market_id)
+            const price = parseFloat(parseFloat(`${preco}`.replace(',', '.')).toFixed(2))
 
-        const produto = {
-            nomeProduto,
-            marcaProduto,
-            quantidade,
-            unidade,
-            preco,
-            location,
-            authState
+        try {
+            const update = await updateProduct(product_id, market_id, price)
+            console.log("update: ", update)
+    
+            router.replace('/home')
+        } catch (error) {
+            console.error("Erro ao atualizar produto:", error)
+            Alert.alert("Erro", "Não foi possível atualizar o produto.")
         }
 
-        console.log(produto)
-        router.replace('/search')
     }
-    
-    useEffect(() => {
-        async function getCurrentLocation() {
-          
-          let { status } = await Location.requestForegroundPermissionsAsync();
-          if (status !== 'granted') {
-            alert('Permission to access location was denied');
-            return;
-          }
-    
-          let location = await Location.getCurrentPositionAsync({});
-          setLocation(location);
+
+    const loadProduct = async (params) => {
+        console.log("PARAMS: ", params)
+        if (params.product_id && params.market_id) {
+            try {
+                const productID = parseInt(params.product_id)
+                const marketID = parseInt(params.market_id)
+
+                const product = await getProductByMarket(productID, marketID)
+                setPreco(`${product.preco_unitario}`)
+            } catch (error) {
+                console.error("Erro ao carregar produto:", error)
+                Alert.alert("Erro", "Não foi possível carregar o produto para edição.")
+            }
         }
-    
-        getCurrentLocation();
-    }, []);
+    }
+
+
+
+
+    useFocusEffect(
+        useCallback(() => {
+            loadProduct(params);
+
+            return () => {
+                setPreco("");
+            }
+        }, [params.product_id])
+    );
 
     return (
-        <Screen>
+        <Screen style={{ justifyContent: 'flex-start' }}>
             <View style={{
                 width: '100%',
                 flexDirection: 'row',
@@ -72,61 +82,20 @@ const EditProduct = () => {
                     onPress={() => router.replace('/search')}
                 />
                 
-                <Text style={styled.title}>Editar produto</Text>
+                <Text style={styled.title}>Editar valor do produto</Text>
             </View>
 
             <View style={{
                 width: '100%',
-                height: '100%',
-                marginVertical: 'auto'
+                height: '90%',
+                marginVertical: 'auto',
+                justifyContent: 'space-between',
             }}>
-                <Input
-                    width="100%"
-                    type="text"
-                    label="Nome do produto"
-                    error={false}
-                    value={nomeProduto}
-                    onChangeText={(e) => setNomeProduto(e)}
-                />
-
-                <Input
-                    type="text"
-                    label="Marca do produto"
-                    error={false}
-                    value={marcaProduto}
-                    onChangeText={(e) => setMarcaProduto(e)}
-                />
-
-                <View style={{
-                    width: '100%',
-                    flexDirection: 'row',
-                    justifyContent: 'space-between'
-                }}>
-                    <View style={{width: '48%'}}>
-                        <Input
-                            type="numeric"
-                            label="Quantidade"
-                            error={false}
-                            value={quantidade}
-                            onChangeText={(e) => setQuantidade(e)}
-                        />
-                    </View>
-                    <View style={{width: '48%'}}>
-                        <Input
-                            type="text"
-                            label="Unidade"
-                            error={false}
-                            value={unidade}
-                            onChangeText={(e) => setUnidade(e)}
-                        />
-                    </View>
-                </View>
-
                 <Input
                     type="numeric"
                     label="Preço do produto"
                     error={false}
-                    value={preco}
+                    value={`${preco}`.replace(".", ",")}
                     onChangeText={(e) => setPreco(e)}
                 />
 

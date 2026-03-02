@@ -1,8 +1,8 @@
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useState } from 'react'
+import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import React, { useCallback, useState } from 'react'
 import Screen from '../../components/Screen'
 import ImageSearcdh from '../../assets/images/search/image_search.js'
-import { router } from 'expo-router'
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router'
 import Input from '../../components/Input.jsx'
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { colors } from '../../assets/colors/global.jsx'
@@ -14,96 +14,25 @@ import Card from '../../components/Card.jsx'
 import Badge from '../../components/Badge.jsx'
 import ProgressBar from '../../components/ProgressBar.jsx'
 import { format } from 'date-fns';
+import { searchProduct } from '../../services/products/promer.tsx'
+import { SERVICES_URL } from '../../services/api.tsx';
+import { useGps } from '../../contexts/gpsContext.tsx';
+import { addItemToLista } from '../../services/lists/listas.tsx'
+import { useList } from '../../contexts/listContext.tsx'
+
 
 
 const Search = () => {
+    const params = useLocalSearchParams();
     const [search, setSearch] = useState("")
     const [openFilter, setOpenFilter] = useState(false)
     const [filtroOrdem, setFiltroOrdem] = useState(false)
-    const [items] = useState([
-        {
-          image: "https://example.com/images/arroz.jpg",
-          market: "Supermercado ABC",
-          product: "Arroz 5kg",
-          confidence: 95,
-          price: 23.99,
-          updatedAt: "2025-01-25"
-        },
-        {
-          image: "https://example.com/images/feijao.jpg",
-          market: "Mercado XYZ",
-          product: "Feijão Carioca 1kg",
-          confidence: 30,
-          price: 8.49,
-          updatedAt: "2025-01-24"
-        },
-        {
-          image: "https://example.com/images/leite.jpg",
-          market: "Hipermercado Delta",
-          product: "Leite Integral 1L",
-          confidence: 65,
-          price: 4.99,
-          updatedAt: "2025-01-23"
-        },
-        {
-          image: "https://example.com/images/oleo.jpg",
-          market: "Supermercado ABC",
-          product: "Óleo de Soja 900ml",
-          confidence: 100,
-          price: 7.29,
-          updatedAt: "2025-01-22"
-        },
-        {
-          image: "https://example.com/images/acucar.jpg",
-          market: "Mercado da Esquina",
-          product: "Açúcar Refinado 1kg",
-          confidence: 57,
-          price: 3.89,
-          updatedAt: "2025-01-24"
-        },
-        {
-          image: "https://example.com/images/cafe.jpg",
-          market: "Mercado XYZ",
-          product: "Café em Pó 500g",
-          confidence: 96,
-          price: 12.49,
-          updatedAt: "2025-01-26"
-        },
-        {
-          image: "https://example.com/images/macarrao.jpg",
-          market: "Hipermercado Delta",
-          product: "Macarrão Espaguete 500g",
-          confidence: 10,
-          price: 4.49,
-          updatedAt: "2025-01-24"
-        },
-        {
-          image: "https://example.com/images/detergente.jpg",
-          market: "Supermercado ABC",
-          product: "Detergente Líquido 500ml",
-          confidence: 2,
-          price: 2.39,
-          updatedAt: "2025-01-25"
-        },
-        {
-          image: "https://example.com/images/sabonete.jpg",
-          market: "Mercado da Esquina",
-          product: "Sabonete Neutro 90g",
-          confidence: 20,
-          price: 1.79,
-          updatedAt: "2025-01-23"
-        },
-        {
-          image: "https://example.com/images/frango.jpg",
-          market: "Hipermercado Delta",
-          product: "Peito de Frango Resfriado 1kg",
-          confidence: 71,
-          price: 14.99,
-          updatedAt: "2025-01-26"
-        }
-    ])
-    const [pesquisa, setPesquisa] = useState(false)
-
+    const [filtroCategoria, setFiltroCategoria] = useState('')
+    const [items, setItems] = useState([])
+    const BASE_URL_PROMER = SERVICES_URL.PROMER;
+    const { location, refreshLocation, loading } = useGps();
+    const { listState } = useList()
+    
     const styled = StyleSheet.create({
         price: {
             fontSize: 24,
@@ -113,14 +42,76 @@ const Search = () => {
         }
     })
 
-    const addList = (i) => {
-        router.replace({
-            pathname: '/createList',
-            params: {
-                ...i
-            }
-        })
+    const addList = async (i)  => {
+        try {
+            const response = await addItemToLista(listState.id, i.produto.id, i.mercado.id, 1, i.preco_unitario)
+        
+            console.log("ADICIONADO: ", response)
+            router.replace({
+                pathname: '/list',
+                params: {
+                    id: listState.id
+                }
+            })
+        } catch (error) {
+            Alert.alert("Erro", "Ocorreu um erro ao adicinoar item na lista de compras.")
+        }
     };
+
+    const pesquisar = async () => {
+        setOpenFilter(false)
+        await refreshLocation();
+
+        if (!location) {
+            alert('Por favor, habilite a localização para realizar a busca por produtos próximos.')
+            return;
+        }
+
+        if (search) {
+            const filtro = {
+                texto: search,
+                ordem: filtroOrdem,
+                categoria: filtroCategoria
+            }
+
+            try {
+                const response = await searchProduct(filtro, location)
+                if (response.length > 0) {
+                    setItems(response)
+                } else {
+                    Alert.alert("Sem Resultados...", "Nenhum resultado foi encontrado para sua pesquisa.")
+                }
+            } catch (error) {
+                Alert.alert("Sem Resultados...", "Nenhum resultado foi encontrado para sua pesquisa.")
+                setItems([])
+            }
+        } else {
+            setItems([])
+        }
+    }
+
+    const loadParams = () => {
+        if (params.product) {
+            setItems(params.product ? JSON.parse(params.product) : []);
+        }
+
+        if (params.search) {
+            setSearch(params.search)
+        } else {
+            setSearch("")
+        }
+    } 
+
+    useFocusEffect(
+        useCallback(() => {
+            loadParams();
+
+            return () => {
+                setItems([]);
+                setSearch('');
+            }
+        }, [params.product])
+    );
 
     return (
         <Screen scroll>
@@ -128,13 +119,14 @@ const Search = () => {
                 height: '100%',
                 marginVertical: 'auto',
                 alignItems: 'center',
-                justifyContent: 'center',
+                justifyContent: 'flex-start',
+                paddingBottom: 88,
             }}> 
                 <View style={{
                     width: '100%',
                     flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
+                    justifyContent: 'flex-start',
+                    alignItems: 'center',
                 }}>
                     <BackButton 
                         accessibilityHint="Pressione para voltar"
@@ -144,13 +136,13 @@ const Search = () => {
                     <View style={{width: '80%'}}>
                         <Input 
                             type="text"
-                            label="Texto qualquer"
+                            label="Pesquisar produto"
                             required={false}
                             error={false}
                             value={search}
                             onChangeText={(e) => setSearch(e)}
                             hidePlaceholder
-                            onBlur={() => setPesquisa(search ? true : false)}
+                            onBlur={() => pesquisar()}
                         />
                     </View>
 
@@ -166,57 +158,65 @@ const Search = () => {
                     </TouchableOpacity>
                 </View>
 
-
-                {pesquisa && items.length > 0 ? (
-                    <View style={{
-                        marginTop: 16,
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                        alignItems: 'flex-start',
-                        flexWrap: 'wrap'
-                    }}>
-
-                        {items.map((i, index) => (
-                            <Card 
-                                key={index} 
-                                width="48.8%"
-                                style={{
-                                    justifyContent: 'flex-start',
-                                    alignItems: 'center',
-                                }}
-                            >
-                                <Image source={{uri: "https://io.convertiez.com.br/m/superpaguemenos/shop/products/images/17846/small/arroz-prato-fino-tipo-1-5kg_58932.jpg"}} width={136} height={136}/>
-                                
-                                <View style={{
-                                    width: '100%',
-                                    alignItems: 'flex-start',
-
-                                }}>
-                                    <Badge text={i.market} backgroundColor={colors.hookers_green}/>
-                                    <Text>{i.product}</Text>
-                                    <Text style={styled.price}>R$ {i.price}</Text>
-                                </View>
-
-                                <ProgressBar percentage={i.confidence}/>
-                                <Text style={styled.update}>Atualizado em: {format(new Date(i.updatedAt), "dd/MM/yyyy")}</Text>
-
-                                <Button 
-                                    type='add'
-                                    backgroundColor={colors.turquoise}
-                                    width='100%'
-                                    text='salvar na lista'
-                                    onPress={() => addList(i)}
-                                />
-                            </Card>
-                        ))}
-
-
-                    </View>
-                ) : (
+                {items === null ? (
                     <View style={{marginTop: "60%"}}>
                         <ImageSearcdh width={160} height={149.11}/>
+                        <Text style={{ marginTop: 16 }}>Nenhum resultado encontrado!</Text>
                     </View>
+                ) : (
+                    <>
+                        {items.length > 0 ? (
+                            <View style={{
+                                marginTop: 16,
+                                flexDirection: 'row',
+                                justifyContent: 'space-between',
+                                alignItems: 'flex-start',
+                                flexWrap: 'wrap'
+                            }}>
+        
+                                {items.map((i, index) => (
+                                    <Card 
+                                        key={index} 
+                                        width="48.8%"
+                                        style={{
+                                            justifyContent: 'flex-start',
+                                            alignItems: 'center',
+                                        }}
+                                    >
+                                        <Image source={{uri: `${BASE_URL_PROMER}/produto/image/${i.produto.bar_code}`}} width={136} height={136}/>
+                                        
+                                        <View style={{
+                                            width: '100%',
+                                            alignItems: 'flex-start',
+        
+                                        }}>
+                                            <Badge text={i.mercado.nome} backgroundColor={colors.hookers_green}/>
+                                            <Text>{i.produto.nome}</Text>
+                                            <Text style={styled.price}>R$ {i.preco_unitario.toFixed(2)}</Text>
+                                        </View>
+        
+                                        <ProgressBar percentage={i.nivel_confianca}/>
+                                        <Text style={styled.update}>Atualizado em: {format(new Date(i.modified_at), "dd/MM/yyyy")}</Text>
+        
+                                        <Button 
+                                            type='add'
+                                            backgroundColor={colors.turquoise}
+                                            width='100%'
+                                            text='salvar na lista'
+                                            onPress={() => addList(i)}
+                                        />
+                                    </Card>
+                                ))}
+        
+                            </View>
+                        ) : (
+                            <View style={{marginTop: "60%"}}>
+                                <ImageSearcdh width={160} height={149.11}/>
+                            </View>
+                        )}
+                    </>
                 )}
+
 
             </View>
 
@@ -289,6 +289,15 @@ const Search = () => {
                         { value: 19, label: "Papelaria" },
                         { value: 20, label: "Eletroportáteis" }
                    ]}
+                   onValueChange={(e) => setFiltroCategoria(e)}
+                />
+
+                <Button 
+                    width={'100%'}
+                    backgroundColor={colors.turquoise}
+                    text="Filtrar"
+                    accessibilityHint="Pressione para filtrar por última atualização!"
+                    onPress={() => pesquisar()}
                 />
                 
             </AnimatedModal>

@@ -1,20 +1,26 @@
-import { StyleSheet, View, TouchableOpacity } from 'react-native'
+import { StyleSheet, View, TouchableOpacity, Alert, ActivityIndicator } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { colors } from '../../assets/colors/global';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { router } from 'expo-router';
+import BackButton from '../../components/BackButton';
+import { getProductByBarcode, validaImage } from '../../services/products/promer';
+import { useList } from '../../contexts/listContext';
+import { useGps } from '../../contexts/gpsContext.tsx';
+import { searchProduct } from '../../services/products/promer.tsx'
 
 const CameraSearch = () => {
+    const {listState} = useList();
     let cameraRef = useRef();
+    const { location, refreshLocation, loading } = useGps();
     const [permission, requestPermission] = useCameraPermissions();
     const [photo, setPhoto] = useState('');
     const [barcodeMode, setBarcodeMode] = useState(false)
     const [barcodeValue, setBarcodeValue] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
-        
 
-    
     useEffect(() => {
         if (permission) {
             if (!permission.granted) {
@@ -25,39 +31,147 @@ const CameraSearch = () => {
 
 
     const takePic = async () => {
-        let options = {
-            quality: 1,
-            base64: true,
-            exif: false
+        if (isLoading) return;
+
+        setIsLoading(true);
+
+        try {
+            let options = {
+                quality: 1,
+                base64: true,
+                exif: false
+            }
+    
+            let newPhoto = await cameraRef.current.takePictureAsync(options);
+            setPhoto(newPhoto)
+    
+            const base64WithPrefix = `data:image/jpeg;base64,${newPhoto.base64}`;
+            const response = await validaImage(base64WithPrefix);
+    
+            await refreshLocation();
+            
+            if (!location) {
+                Alert.alert(
+                    'Localização necessária',
+                    'Por favor, habilite a localização para realizar a busca por produtos próximos.'
+                );
+                return;
+            }
+    
+            let textoFiltro = ""
+            const keys = response.nome.split(" ");
+            if (keys.length > 4) {
+                textoFiltro = `${keys[0]} ${keys[1]} ${keys[2]} ${keys[3]}`
+            } else {
+                textoFiltro = response.nome
+            }
+
+            const filtro = {
+                texto: textoFiltro,
+                ordem: "",
+                categoria: ""
+            }
+
+            try {
+                const responseProduct = await searchProduct(filtro, location)
+
+                if (!responseProduct || responseProduct.length === 0) {
+                    // Produto não encontrado, cadastrar produto
+                    response.foto = base64WithPrefix;
+                    router.push({
+                        pathname: '/createProduct',
+                        params: { 
+                            product: JSON.stringify(response),
+                            key: Date.now().toString()
+                        }
+                    })
+                    return;
+                }
+
+                router.push({
+                    pathname: '/search',
+                    params: { 
+                        product: JSON.stringify(responseProduct),
+                        key: Date.now().toString(),
+                        search: filtro.texto,
+                    }
+                })
+            } catch (error) {
+                response.foto = base64WithPrefix;
+                router.push({
+                    pathname: '/createProduct',
+                    params: { 
+                        product: JSON.stringify(response),
+                        key: Date.now().toString()
+                    }
+                })
+            }
+        } catch (error) {
+            console.log("Erro ao tirar ou processar a foto:", error);
+            Alert.alert('Erro', 'Não foi possível processar a imagem.');
+        } finally {
+            setIsLoading(false);
         }
 
-        let newPhoto = await cameraRef.current.takePictureAsync(options);
-        setPhoto(newPhoto)
-
-        console.log(newPhoto)
     }
 
     const scanner = (e) => {
         setBarcodeValue(e.data)
     }
 
+    const searchProductByBarcode = async (barcode) => {
+        setIsLoading(true);
+
+        try {
+            const response = await getProductByBarcode(barcode)
+    
+            router.push({ pathname: '/search', params: {
+                product: JSON.stringify(response)
+            } })
+
+            setIsLoading(false);
+
+        } catch (error) {
+            console.log(error)
+            setIsLoading(false);
+            Alert.alert('Erro', 'Não foi possível buscar o produto pelo código de barras.');
+        }
+
+        return null;
+    }
+
     useEffect(() => {
         if (barcodeValue) {
-            router.replace({
-                pathname: '/camera',
-                params: {
-                    id: barcodeValue
-                }
-            })
+            searchProductByBarcode(barcodeValue)
+
+
+            // router.replace({
+            //     pathname: '/camera',
+            //     params: {
+            //         id: barcodeValue
+            //     }
+            // })
         }
     }, [barcodeValue])
 
-
     return (
         <>
+            {isLoading && (
+                <View style={styles.loadingOverlay}>
+                    <ActivityIndicator size="large" color={colors.white} />
+                </View>
+            )}
+
+            <View style={styles.header}>
+                <BackButton 
+                    accessibilityHint="Pressione para voltar"
+                    onPress={() => router.back()}
+                    color={colors.white}
+                />
+            </View>
+
             {barcodeMode ? (
                 <View style={styles.container}>
-
                     <CameraView
                         ref={cameraRef}
                         style={styles.camera}
@@ -96,7 +210,11 @@ const CameraSearch = () => {
                         <View style={styles.buttonContainer}>
                             <View style={{ width: 32 }}></View>
 
-                            <TouchableOpacity style={styles.picture_button} onPress={takePic}>
+                            <TouchableOpacity
+                                style={styles.picture_button}
+                                onPress={takePic}
+                                disabled={isLoading}
+                            >
                                 <View style={styles.button_inside}></View>
                             </TouchableOpacity>
 
@@ -195,7 +313,25 @@ const styles = StyleSheet.create({
         position: 'absolute',
         backgroundColor: colors.scarlet,
         left: '49.5%'
-    }
+    },
+    header: {
+        position: 'absolute',
+        marginTop: 48,
+        left: 16,
+        zIndex: 10,
+        backgroundColor: 'transparent'
+    },
+    loadingOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 999,
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
 });
 
 export default CameraSearch

@@ -1,7 +1,7 @@
 import React from 'react'
 import { StyleSheet, Text, TouchableOpacity } from 'react-native'
-import AntDesign from '@expo/vector-icons/AntDesign';
 import Feather from '@expo/vector-icons/Feather';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { colors, getColorKeyByValue } from '../assets/colors/global';
 
 const ShortButton = (props) => {
@@ -31,7 +31,7 @@ const ShortButton = (props) => {
     const icons = {
 
         done: <Feather name="check" size={32} color={`${styles.text.color}`} />,
-        next: <AntDesign name="arrowright" size={32} color={`${styles.text.color}`} />,
+        next: <MaterialIcons name="navigate-next" size={32} color={`${styles.text.color}`} />,
     }
 
     return (

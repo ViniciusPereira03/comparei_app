@@ -8,6 +8,7 @@ import { router } from 'expo-router'
 import logo from '../assets/images/image.png'
 import Input from '../components/Input'
 import { useAuth } from '../contexts/authContext'
+import { registerUser } from '../services/users/user'
 
 const Subscribe = () => {
     const { onLogin } = useAuth();
@@ -59,7 +60,27 @@ const Subscribe = () => {
 
     // Realizar o cadastro e logar usuário
     const subscribeAndLogin = async () => {
-        onLogin('admin', 'admin')
+        await registerUser(name, username, email, password)
+        onLogin(username, password)
+    }
+
+    const backToLogin = () => {
+        setStep(0)
+        setName("")
+        setErroName(false)
+        setUsername("")
+        setErroUsername(false)
+        setEmail("")
+        setErroEmail(false)
+        setPassword("")
+        setErroPassword(false)
+        setRepeatPassword("")
+        setErroRepeatPassword(false)
+
+        router.replace({
+            pathname: '/',
+            params: {}
+        })
     }
 
     useEffect(() => {
@@ -91,10 +112,7 @@ const Subscribe = () => {
                 <View>
                     <BackButton 
                         accessibilityHint="Pressione para voltar"
-                        onPress={() => {
-                            setStep(0)
-                            router.back()
-                        }}
+                        onPress={() => backToLogin()}
                     />
 
                     <View style={{marginTop: "30%"}}>
