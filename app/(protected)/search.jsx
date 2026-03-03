@@ -133,7 +133,7 @@ const Search = () => {
                         onPress={() => router.back()}
                     />
                     
-                    <View style={{width: '80%'}}>
+                    <View style={{width: '85%'}}>
                         <Input 
                             type="text"
                             label="Pesquisar produto"
@@ -146,7 +146,7 @@ const Search = () => {
                         />
                     </View>
 
-                    <TouchableOpacity 
+                    {/* <TouchableOpacity 
                         style={{ padding: 8}}
                         activeOpacity={0.9} 
                         accessible={true}
@@ -155,7 +155,7 @@ const Search = () => {
                         onPress={() => setOpenFilter(true)}
                     >
                         <FontAwesome name="filter" size={24} color={colors.hookers_green}/>
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                 </View>
 
                 {items === null ? (

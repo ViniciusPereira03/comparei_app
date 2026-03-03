@@ -8,12 +8,16 @@ import { colors } from '../assets/colors/global';
 
 const TabBar = ({ state, descriptors, navigation }) => {
     const { buildHref } = useLinkBuilder();
+    
+    // Lista de telas sem menu
     const hideTabBarList = [
         'createList',
         'createProduct',
         'editProduct',
         'cameraSearch',
     ]
+
+    // Lista de telas que não aparecem no menu
     const hideMenu = [
         '_sitemap', 
         '+not-found', 
@@ -23,6 +27,7 @@ const TabBar = ({ state, descriptors, navigation }) => {
         'createProduct',
         'editProduct',
         'cameraSearch',
+        'ranking',
     ];
     const routeName = state.routes[state.index].name;
 

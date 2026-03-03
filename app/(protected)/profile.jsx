@@ -13,7 +13,9 @@ import { useAuth } from '../../contexts/authContext'
 import { useList } from '../../contexts/listContext'
 import {SERVICES_URL} from '../../services/api'
 import { useFocusEffect } from '@react-navigation/native'
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 const BASE_URL = SERVICES_URL.USERS;
+
 
 const Profile = () => {
     const [profile, setProfile] = useState()
@@ -145,10 +147,28 @@ const Profile = () => {
                     height: '100%',
                     justifyContent: 'flex-start',
                 }}>
-                    <BackButton 
-                        accessibilityHint="Pressione para voltar"
-                        onPress={() => router.back()}
-                    />
+                    <View style={{
+                        width: '100%',
+                        justifyContent: 'space-between',
+                        flexDirection: 'row',
+                        alignItems: 'flex-start',
+                    }}>
+                        <BackButton 
+                            accessibilityHint="Pressione para voltar"
+                            onPress={() => router.back()}
+                        />
+
+                        <TouchableOpacity 
+                            style={{ padding: 8}}
+                            activeOpacity={0.9} 
+                            accessible={true}
+                            accessibilityLabel={`Botão para ver ranking de usuários`}
+                            accessibilityHint={`Pressione para ver o ranking de usuários`}
+                            onPress={() => router.push('/ranking')}
+                        >
+                            <MaterialCommunityIcons name="podium-gold" size={24} color={colors.hookers_green} />
+                        </TouchableOpacity>
+                    </View>
 
                     <View style={{ marginTop: '30%' }}>
                         <View style={styled.profile_view}>

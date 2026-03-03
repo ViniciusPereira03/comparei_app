@@ -126,7 +126,7 @@ const Home = () => {
                                             outline
                                         />
                                     </View>
-                                    <Text>Criada em:  {format(new Date(l.created_at), "dd/MM/yyyy HH:ii:ss")}</Text>
+                                    <Text>Criada em:  {format(new Date(l.created_at), "dd/MM/yyyy HH:mm:ss")}</Text>
 
                                 </TouchableOpacity>
                             </Card>

@@ -67,6 +67,13 @@ const TabsLayout = () => {
                         title: "Editar produto"
                     }}
                 />
+
+                <Tabs.Screen 
+                    name="ranking"
+                    options={{
+                        title: "Ranking"
+                    }}
+                />
             </Tabs>
         </GestureHandlerRootView>
     )
