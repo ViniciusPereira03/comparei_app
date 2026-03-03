@@ -51,6 +51,14 @@ export const getUser = async (id: string) => {
     );
 };
 
+export const getRanking = async (id: string) => {
+    return apiRequest(
+        BASE_URL,
+        `/users?order=ranking`,
+        'GET'
+    );
+};
+
 export const putDistanceRadius = async (
     ray_distance: number,
     userId: string
