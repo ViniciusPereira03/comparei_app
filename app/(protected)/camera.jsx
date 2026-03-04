@@ -100,7 +100,7 @@ const Camera = () => {
                         onPress={() => router.replace('/search')}
                     />
                     
-                    <Text style={styled.title}>Produto encontrado</Text>
+                    <Text style={styled.title}>Produto encontrado </Text>
                 </View>
 
                 {item && (
@@ -122,7 +122,7 @@ const Camera = () => {
                                 paddingVertical: 8
                             }}>
                                 <Image source={{uri: "https://io.convertiez.com.br/m/superpaguemenos/shop/products/images/17846/small/arroz-prato-fino-tipo-1-5kg_58932.jpg"}} width={136} height={136}/>
-                                <Text style={{fontSize: 24}}>{item.product}</Text>
+                                <Text style={{fontSize: 24}}>{item.product} </Text>
                             </View>
 
                             {item.markets.map((m, index) => (
@@ -137,7 +137,7 @@ const Camera = () => {
                                     <View>
                                         <Badge text={m.market} backgroundColor={colors.hookers_green}/>
                                         <ProgressBar percentage={m.confidence}/>
-                                        <Text style={styled.update}>Atualizado em: {format(new Date(m.updatedAt), "dd/MM/yyyy")}</Text>
+                                        <Text style={styled.update}>Atualizado em: {format(new Date(m.updatedAt), "dd/MM/yyyy")} </Text>
                                     </View> 
 
                                     <View
@@ -146,7 +146,7 @@ const Camera = () => {
                                             alignItems: 'center'
                                         }}
                                     >
-                                        <Text style={styled.price}>R$ {m.price}</Text>
+                                        <Text style={styled.price}>R$ {m.price} </Text>
                                         
                                         
                                         <Button 

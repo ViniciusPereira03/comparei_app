@@ -11,7 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { colors } from '../assets/colors/global'
 
-const Screen = ({ children, scroll = false, style = {} }) => {
+const Screen = ({ children, scroll = false, style = {}, dismissKeyboard = true }) => {
 
     const styles = StyleSheet.create({
         screen: {
@@ -48,21 +48,29 @@ const Screen = ({ children, scroll = false, style = {} }) => {
         </View>
     )
 
+    const shouldWrapTouchable = !scroll && dismissKeyboard;
+
     return (
         <SafeAreaView style={styles.screen}>
             <KeyboardAvoidingView
                 style={{ flex: 1 }}
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 20}
+                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
             >
-                <TouchableWithoutFeedback
-                    onPress={Keyboard.dismiss}
-                    accessible={false}
-                >
+                {shouldWrapTouchable ? (
+                    <TouchableWithoutFeedback
+                        onPress={Keyboard.dismiss}
+                        accessible={false}
+                    >
+                        <View style={{ flex: 1 }}>
+                            {content}
+                        </View>
+                    </TouchableWithoutFeedback>
+                ) : (
                     <View style={{ flex: 1 }}>
                         {content}
                     </View>
-                </TouchableWithoutFeedback>
+                )}
             </KeyboardAvoidingView>
         </SafeAreaView>
     )

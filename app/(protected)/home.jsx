@@ -117,7 +117,7 @@ const Home = () => {
                                             justifyContent: 'space-between',
                                         }}
                                     >
-                                        <Text style={{fontSize: 18, fontWeight: 'bold', paddingBottom: 16}}>{l.nome}</Text>
+                                        <Text style={{fontSize: 18, fontWeight: 'bold', paddingBottom: 16}}>{l.nome} </Text>
 
                                         <Badge 
                                             width
@@ -126,7 +126,7 @@ const Home = () => {
                                             outline
                                         />
                                     </View>
-                                    <Text>Criada em:  {format(new Date(l.created_at), "dd/MM/yyyy HH:mm:ss")}</Text>
+                                    <Text>Criada em:  {format(new Date(l.created_at), "dd/MM/yyyy HH:mm:ss")} </Text>
 
                                 </TouchableOpacity>
                             </Card>

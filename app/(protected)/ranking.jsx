@@ -71,17 +71,17 @@ const Profile = () => {
                                         ) : (null)}
 
                                         <View>
-                                            <Text style={{fontSize: 18, fontWeight: 'bold', paddingBottom: 4}}>{user.name}</Text>
-                                            <Text style={{fontSize: 14, fontWeight: 'italic', paddingBottom: 16}}>{user.username}</Text>
-                                            <Text>Entrou em:  {format(new Date(user.created_at), "dd/MM/yyyy HH:mm:ss")}</Text>
+                                            <Text style={{fontSize: 18, fontWeight: 'bold', paddingBottom: 4}}>{user.name} </Text>
+                                            <Text style={{fontSize: 14, fontWeight: 'italic', paddingBottom: 16}}>{user.username} </Text>
+                                            <Text>Entrou em:  {format(new Date(user.created_at), "dd/MM/yyyy HH:mm:ss")} </Text>
                                         </View>
 
                                         <View style={{
                                             marginLeft: 'auto',
                                             alignItems: 'center',
                                         }}>
-                                            <Text>Nível</Text>
-                                            <Text style={{fontSize: 24, fontWeight: 'bold', paddingBottom: 4}}>{user.level}</Text>
+                                            <Text>Nível </Text>
+                                            <Text style={{fontSize: 24, fontWeight: 'bold', paddingBottom: 4}}>{user.level} </Text>
                                         </View>
                                     </View>
                                 </Card>

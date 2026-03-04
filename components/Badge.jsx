@@ -19,13 +19,13 @@ const Badge = ({text, outline,backgroundColor }) => {
         },
         text: {
             color: outline ? backgroundColor : colors.font.to_background[getColorKeyByValue(backgroundColor)],
-
+            paddingHorizontal: 4,
         }
     })
 
     return (
         <View style={styled.badge}>
-            <Text style={styled.text}>{text}</Text>
+            <Text style={styled.text}>{text} </Text>
         </View>
     )
 }

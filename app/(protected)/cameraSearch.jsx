@@ -1,4 +1,4 @@
-import { StyleSheet, View, TouchableOpacity, Alert, ActivityIndicator } from 'react-native'
+import { StyleSheet, View, TouchableOpacity, Alert, ActivityIndicator, Text } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { colors } from '../../assets/colors/global';
@@ -19,16 +19,6 @@ const CameraSearch = () => {
     const [barcodeMode, setBarcodeMode] = useState(false)
     const [barcodeValue, setBarcodeValue] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-
-
-    useEffect(() => {
-        if (permission) {
-            if (!permission.granted) {
-                requestPermission()
-            }
-        }
-    }, [permission, permission])
-
 
     const takePic = async () => {
         if (isLoading) return;
@@ -153,6 +143,23 @@ const CameraSearch = () => {
             // })
         }
     }, [barcodeValue])
+
+
+    useEffect(() => {
+        if (permission) {
+            if (!permission.granted) {
+                requestPermission()
+            }
+        }
+    }, [permission, permission])
+
+    if (!permission || !permission.granted) {
+        return (
+            <View style={[styles.container, { backgroundColor: colors.black, alignItems: 'center' }]}>
+                <Text style={{ color: colors.white }}>Aguardando permissão da câmera... </Text>
+            </View>
+        );
+    }
 
     return (
         <>

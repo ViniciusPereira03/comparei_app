@@ -168,7 +168,7 @@ const List = () => {
         if (loadingItem) {
             return (
                 <Card width="100%">
-                    <Text>Carregando item...</Text>
+                    <Text>Carregando item... </Text>
                 </Card>
             )
         }
@@ -197,17 +197,17 @@ const List = () => {
                             backgroundColor={colors.hookers_green}
                         />
 
-                        <Text>{data.produto.nome}</Text>
+                        <Text>{data.produto.nome} </Text>
 
                         <Text style={styles.price}>
                             R$ {`${data.preco_unitario.toFixed(2)}`.replace('.', ',')}
-                        </Text>
+                         </Text>
 
                         <ProgressBar percentage={data.nivel_confianca} />
 
                         <Text style={styles.update}>
                             Atualizado em: {format(new Date(data.modified_at), "dd/MM/yyyy")}
-                        </Text>
+                         </Text>
                     </View>
                 </View>
 
@@ -278,6 +278,7 @@ const List = () => {
 
     return (
         <Screen 
+            dismissKeyboard={false}
             // scroll={false}
         >
             <View style={{
@@ -293,7 +294,7 @@ const List = () => {
                         onPress={() => router.back()}
                     />
 
-                    <Text style={styles.title}>{listName}</Text>
+                    <Text style={styles.title}>{listName}  </Text>
                 </View>
 
                 {!loading && showButtons ? (
@@ -321,7 +322,7 @@ const List = () => {
                 ) : (<></>)}
 
                 {loading ? (
-                    <Text>Carregando lista...</Text>
+                    <Text>Carregando lista... </Text>
                 ) : filteredItems.length > 0 ? (
                     <>
 
@@ -347,9 +348,9 @@ const List = () => {
                         />
 
                         {items.length === 0 ? (
-                            <Text>Nenhum item foi adicionado à lista</Text>
+                            <Text>Nenhum item foi adicionado à lista  </Text>
                         ) : (
-                            <Text>Nenhum item pendente encontrado</Text>
+                            <Text>Nenhum item pendente encontrado </Text>
                         )}
 
 

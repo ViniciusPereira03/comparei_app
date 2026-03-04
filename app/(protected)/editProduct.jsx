@@ -82,7 +82,7 @@ const EditProduct = () => {
                     onPress={() => router.replace('/search')}
                 />
                 
-                <Text style={styled.title}>Editar valor do produto</Text>
+                <Text style={styled.title}>Editar valor do produto </Text>
             </View>
 
             <View style={{

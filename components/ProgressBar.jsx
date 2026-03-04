@@ -63,7 +63,7 @@ const ProgressBar = ({ percentage }) => {
                 />
                 ))}
             </View>
-            {/* <Text style={styles.percentage}>{percentage}%</Text> */}
+            {/* <Text style={styles.percentage}>{percentage}% </Text> */}
         </View>
     );
 };

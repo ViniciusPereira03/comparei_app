@@ -161,7 +161,7 @@ const Search = () => {
                 {items === null ? (
                     <View style={{marginTop: "60%"}}>
                         <ImageSearcdh width={160} height={149.11}/>
-                        <Text style={{ marginTop: 16 }}>Nenhum resultado encontrado!</Text>
+                        <Text style={{ marginTop: 16 }}>Nenhum resultado encontrado! </Text>
                     </View>
                 ) : (
                     <>
@@ -191,12 +191,12 @@ const Search = () => {
         
                                         }}>
                                             <Badge text={i.mercado.nome} backgroundColor={colors.hookers_green}/>
-                                            <Text>{i.produto.nome}</Text>
-                                            <Text style={styled.price}>R$ {i.preco_unitario.toFixed(2)}</Text>
+                                            <Text>{i.produto.nome} </Text>
+                                            <Text style={styled.price}>R$ {i.preco_unitario.toFixed(2)} </Text>
                                         </View>
         
                                         <ProgressBar percentage={i.nivel_confianca}/>
-                                        <Text style={styled.update}>Atualizado em: {format(new Date(i.modified_at), "dd/MM/yyyy")}</Text>
+                                        <Text style={styled.update}>Atualizado em: {format(new Date(i.modified_at), "dd/MM/yyyy")}  </Text>
         
                                         <Button 
                                             type='add'
@@ -221,7 +221,7 @@ const Search = () => {
             </View>
 
             <AnimatedModal visible={openFilter} onClose={() => setOpenFilter(false)}>
-                <Text>Ordenar por</Text>
+                <Text>Ordenar por </Text>
 
                 <View style={{
                     flexDirection: 'row',

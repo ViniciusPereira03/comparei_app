@@ -285,7 +285,7 @@ const CreateProduct = () => {
                                 onPress={() => router.replace('/search')}
                             />
                             
-                            <Text style={styled.title}>Cadastrar produto</Text>
+                            <Text style={styled.title}>Cadastrar produto </Text>
                         </View>
                     
                         <View style={{
@@ -372,7 +372,7 @@ const CreateProduct = () => {
                                         onPress={() => router.replace('/search')}
                                     />
                                     
-                                    <Text style={styled.title}>Cadastrar Mercado</Text>
+                                    <Text style={styled.title}>Cadastrar Mercado </Text>
                                 </View>
                             
                                 <View style={{
@@ -433,7 +433,7 @@ const CreateProduct = () => {
                                     marginBottom: 12
                                 }}>
                                     Selecione o mercado
-                                </Text>
+                                 </Text>
 
                                 {mercados.map((m) => (
                                     <TouchableOpacity
@@ -455,9 +455,9 @@ const CreateProduct = () => {
                                             }, 100);
                                         }}
                                     >
-                                        <Text style={{ fontWeight: 'bold' }}>{m.nome}</Text>
-                                        <Text>{m.endereco}, {m.numero}</Text>
-                                        <Text>{m.bairro} - {m.cidade}</Text>
+                                        <Text style={{ fontWeight: 'bold' }}>{m.nome} </Text>
+                                        <Text>{m.endereco}, {m.numero} </Text>
+                                        <Text>{m.bairro} - {m.cidade} </Text>
                                     </TouchableOpacity>
                                 ))}
                             </View>
