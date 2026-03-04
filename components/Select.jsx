@@ -43,7 +43,7 @@ const Select = ({ label, required = false, options = [], value, onValueChange })
   const renderLabel = () => (
     <Animated.Text style={[styles.label, labelStyle]}>
       {label}
-      {required && <Text style={styles.asterisco}>*</Text>}
+      {required && <Text style={styles.asterisco}>* </Text>}
     </Animated.Text>
   );
 
@@ -52,7 +52,7 @@ const Select = ({ label, required = false, options = [], value, onValueChange })
   //     style={styles.option}
   //     onPress={() => handleOptionSelect(item)}
   //   >
-  //     <Text style={styles.optionText}>{item.label}</Text>
+  //     <Text style={styles.optionText}>{item.label} </Text>
   //   </TouchableOpacity>
   // );
 
@@ -73,7 +73,7 @@ const Select = ({ label, required = false, options = [], value, onValueChange })
       >
         <Text style={styles.selectedText}>
           {options.find((option) => option.value === selectedValue)?.label || ''}
-        </Text>
+         </Text>
         <MaterialIcons
           name={isOpen ? 'arrow-drop-up' : 'arrow-drop-down'}
           size={24}
@@ -90,7 +90,7 @@ const Select = ({ label, required = false, options = [], value, onValueChange })
                 accessible={true}
                 accessibilityRole="menuitem"
             >
-                <Text style={styles.optionText}>{option.label}</Text>
+                <Text style={styles.optionText}>{option.label} </Text>
             </TouchableOpacity>
             ))}
         </ScrollView>
@@ -103,12 +103,13 @@ const styles = StyleSheet.create({
   container: {
     position: 'relative',
     marginVertical: 8,
-    // height: 52
+    zIndex: 1000, // Garante que o container inteiro fique por cima dos outros elementos
   },
   label: {
     position: 'absolute',
     left: 8,
     color: colors.dark_green,
+    zIndex: 10,
   },
   asterisco: {
     color: 'red',
@@ -124,6 +125,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 8,
     marginTop: 16,
+    backgroundColor: colors.white, // Importante para o Android não deixar o fundo transparente
   },
   selectOpen: {
     borderBottomRightRadius: 0,
@@ -137,14 +139,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   dropdown: {
-    marginTop: -1,
+    position: 'absolute', // Faz o menu flutuar
+    top: 58, // Posiciona logo abaixo do input
+    width: '100%',
+    backgroundColor: colors.white, // Fundo branco obrigatório no Android para sobreposição
     borderWidth: 1,
     borderColor: colors.hookers_green,
     borderBottomRightRadius: 4,
     borderBottomLeftRadius: 4,
-    borderTopRightRadius: 0,
-    borderTopLeftRadius: 0,
     maxHeight: 150,
+    zIndex: 1000, // Z-index para iOS
+    elevation: 5, // Sombra e elevação obrigatórias para o Android
   },
   option: {
     padding: 12,

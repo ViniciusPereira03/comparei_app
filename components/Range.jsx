@@ -58,7 +58,7 @@ const Range = ({ min = 0, max = 100, initial = 50, step = 1, unidade = "", onCha
                 accessibilityLabel="Deslize para ajustar o valor"
                 accessibilityHint="O valor atual será alterado ao deslizar"
                 accessible={true}
-                accessibilityRole="slider"
+                accessibilityRole="adjustable"
             />
             <Text
                 style={styles.valueText}
@@ -68,7 +68,7 @@ const Range = ({ min = 0, max = 100, initial = 50, step = 1, unidade = "", onCha
                 accessibilityLiveRegion="assertive" // Informa a mudança imediatamente
             >
                 {value}{unidade}
-            </Text>
+             </Text>
         </View>
     );
 };

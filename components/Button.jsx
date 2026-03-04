@@ -42,6 +42,7 @@ const Button = (props) => {
         text: {
             color: props.outline ? props.backgroundColor : colors.font.to_background[getColorKeyByValue(props.backgroundColor)],
             textTransform: props.uppercase === false ? 'none' : 'uppercase',
+            paddingHorizontal: 4,
         }
     });
 
@@ -67,7 +68,7 @@ const Button = (props) => {
                 <>{icons[props.type]}</>
             )}
 
-            {props.text && <Text style={styles.text}>{props.text}</Text>}
+            {props.text && <Text style={styles.text}>{props.text}  </Text>}
         </TouchableOpacity>
     )
 }

@@ -65,6 +65,7 @@ const Input = ({ type = 'text', label, value, onChangeText, required = false, er
       left: 8,
       top: 24,
       color: error ? colors.scarlet : colors.hookers_green,
+      width: '90%',
     },
     asterisco: {
       position: 'absolute',
@@ -103,7 +104,7 @@ const Input = ({ type = 'text', label, value, onChangeText, required = false, er
   const renderLabel = () => (
     <Animated.Text style={[styles.label, labelStyle]}>
       {label}
-      {required && <Text style={styles.asterisco}>*</Text>}
+      {required && <Text style={styles.asterisco}>* </Text>}
     </Animated.Text>
   );
 

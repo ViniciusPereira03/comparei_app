@@ -109,7 +109,7 @@ const CreateList = () => {
                             onPress={() => router.replace('/search')}
                         />
                         
-                        <Text style={styled.title}>Criar nova lista</Text>
+                        <Text style={styled.title}>Criar nova lista  </Text>
                     </View>
 
                     <View style={{width: '100%', paddingBottom: 80}}>

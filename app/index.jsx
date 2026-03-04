@@ -81,7 +81,7 @@ const Login = () => {
                     />
 
                     <TouchableOpacity onPress={() => redirectToSubscribe()}>
-                        <Text style={styles.link}>Não tenho cadastro</Text>
+                        <Text style={styles.link}>Não tenho cadastro  </Text>
                     </TouchableOpacity>
 
                 </View>

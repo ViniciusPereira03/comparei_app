@@ -181,16 +181,16 @@ const Profile = () => {
                                 )}
                             </TouchableOpacity>
                             <Image source={medal} style={styled.medal} />
-                            <Text style={styled.level}>{profile.level}</Text>
+                            <Text style={styled.level}>{profile.level} </Text>
                         </View>
 
                         <View style={{ alignItems: 'center', marginTop: 16 }}>
-                            <Text style={styled.name}>{profile.name}</Text>
-                            <Text style={styled.username}>{profile.username}</Text>
+                            <Text style={styled.name}>{profile.name} </Text>
+                            <Text style={styled.username}>{profile.username} </Text>
                         </View>
 
                         <View style={{ width: '100%', marginTop: 32 }}>
-                            <Text>Buscar mercados no raio</Text>
+                            <Text>Buscar mercados no raio </Text>
                             <Range 
                                 min={1}
                                 max={35}
